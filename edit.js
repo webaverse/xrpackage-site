@@ -13,6 +13,14 @@ import './gif.js';
 import {makeLineMesh, makeTeleportMesh} from './teleport.js';
 
 import targetMeshGeometry from './edit/targetMeshGeometry.js';
+import attachEventListeners from './edit/classlistHandlers.js';
+import {
+  worldSaveButton, worldRevertButton, micButton, dropdownButton, sandboxButton, newWorldButton,
+  packagesSubpage, inventorySubpage, avatarSubpage, avatarSubpageContent,
+  tabs, tabContents, inventorySubtabContent,
+  runMode, editMode,
+  dropdown,
+} from './edit/domElements.js';
 
 const apiHost = 'https://ipfs.exokit.org/ipfs';
 const presenceEndpoint = 'wss://presence.exokit.org';
@@ -1009,98 +1017,6 @@ renderer.domElement.addEventListener('mousedown', e => {
   }
 }); */
 
-// const runMode = document.getElementById('run-mode');
-// const editMode = document.getElementById('edit-mode');
-
-const worldsButton = document.getElementById('worlds-button');
-const worldSaveButton = document.getElementById('world-save-button');
-const worldRevertButton = document.getElementById('world-revert-button');
-const packagesButton = document.getElementById('packages-button');
-const inventoryButton = document.getElementById('inventory-button');
-const avatarButton = document.getElementById('avatar-button');
-const micButton = document.getElementById('mic-button');
-const dropdownButton = document.getElementById('dropdown-button');
-const dropdown = document.getElementById('dropdown');
-const worldsSubpage = document.getElementById('worlds-subpage');
-const packagesSubpage = document.getElementById('packages-subpage');
-const inventorySubpage = document.getElementById('inventory-subpage');
-const avatarSubpage = document.getElementById('avatar-subpage');
-const avatarSubpageContent = avatarSubpage.querySelector('.subtab-content');
-const tabs = Array.from(dropdown.querySelectorAll('.tab'));
-const tabContents = Array.from(dropdown.querySelectorAll('.tab-content'));
-const worldsSubtabs = Array.from(worldsSubpage.querySelectorAll('.subtab'));
-const worldsCloseButton = worldsSubpage.querySelector('.close-button');
-const worldsSubtabContents = Array.from(worldsSubpage.querySelectorAll('.subtab-content'));
-const packagesCloseButton = packagesSubpage.querySelector('.close-button');
-const inventorySubtabs = Array.from(inventorySubpage.querySelectorAll('.subtab'));
-const inventoryCloseButton = inventorySubpage.querySelector('.close-button');
-const inventorySubtabContent = inventorySubpage.querySelector('.subtab-content');
-const avatarCloseButton = avatarSubpage.querySelector('.close-button');
-worldsButton.addEventListener('click', e => {
-  worldsButton.classList.toggle('open');
-  worldsSubpage.classList.toggle('open');
-
-  dropdownButton.classList.remove('open');
-  dropdown.classList.remove('open');
-  packagesButton.classList.remove('open');
-  packagesSubpage.classList.remove('open');
-  inventoryButton.classList.remove('open');
-  inventorySubpage.classList.remove('open');
-  avatarButton.classList.remove('open');
-  avatarSubpage.classList.remove('open');
-});
-packagesButton.addEventListener('click', e => {
-  packagesButton.classList.add('open');
-  packagesSubpage.classList.add('open');
-
-  dropdownButton.classList.remove('open');
-  dropdown.classList.remove('open');
-  inventoryButton.classList.remove('open');
-  inventorySubpage.classList.remove('open');
-  worldsButton.classList.remove('open');
-  worldsSubpage.classList.remove('open');
-  avatarButton.classList.remove('open');
-  avatarSubpage.classList.remove('open');
-});
-inventoryButton.addEventListener('click', e => {
-  inventoryButton.classList.toggle('open');
-  inventorySubpage.classList.toggle('open');
-
-  dropdownButton.classList.remove('open');
-  dropdown.classList.remove('open');
-  packagesButton.classList.remove('open');
-  packagesSubpage.classList.remove('open');
-  worldsButton.classList.remove('open');
-  worldsSubpage.classList.remove('open');
-  avatarButton.classList.remove('open');
-  avatarSubpage.classList.remove('open');
-});
-avatarButton.addEventListener('click', e => {
-  avatarButton.classList.toggle('open');
-  avatarSubpage.classList.toggle('open');
-
-  dropdownButton.classList.remove('open');
-  dropdown.classList.remove('open');
-  packagesButton.classList.remove('open');
-  packagesSubpage.classList.remove('open');
-  worldsButton.classList.remove('open');
-  worldsSubpage.classList.remove('open');
-  inventoryButton.classList.remove('open');
-  inventorySubpage.classList.remove('open');
-});
-dropdownButton.addEventListener('click', e => {
-  dropdownButton.classList.toggle('open');
-  dropdown.classList.toggle('open');
-
-  worldsButton.classList.remove('open');
-  packagesButton.classList.remove('open');
-  packagesSubpage.classList.remove('open');
-  inventoryButton.classList.remove('open');
-  inventorySubpage.classList.remove('open');
-  worldsSubpage.classList.remove('open');
-  avatarButton.classList.remove('open');
-  avatarSubpage.classList.remove('open');
-});
 micButton.addEventListener('click', async e => {
   micButton.classList.toggle('enabled');
   if (micButton.classList.contains('enabled')) {
@@ -1159,20 +1075,7 @@ for (let i = 0; i < inventorySubtabs.length; i++) {
     subtabContent.classList.add('open');
   });
 } */
-[worldsCloseButton, packagesCloseButton, inventoryCloseButton, avatarCloseButton].forEach(closeButton => {
-  closeButton.addEventListener('click', e => {
-    dropdownButton.classList.remove('open');
-    dropdown.classList.remove('open');
-    packagesButton.classList.remove('open');
-    packagesSubpage.classList.remove('open');
-    worldsButton.classList.remove('open');
-    worldsSubpage.classList.remove('open');
-    inventoryButton.classList.remove('open');
-    inventorySubpage.classList.remove('open');
-    avatarButton.classList.remove('open');
-    avatarSubpage.classList.remove('open');
-  });
-});
+
 async function screenshotEngine() {
   const center = new THREE.Vector3(0, 0, 0);
   const size = new THREE.Vector3(3, 3, 3);
@@ -1812,7 +1715,7 @@ publishWorldButton.addEventListener('click', async e => {
     console.warn('invalid status code: ' + res.status);
   }
 }); */
-const sandboxButton = document.getElementById('sandbox-button');
+
 sandboxButton.addEventListener('click', e => {
   _pushWorld(null);
 });
@@ -1825,7 +1728,7 @@ function makeId(length) {
   }
   return result;
 }
-const newWorldButton = document.getElementById('new-world-button');
+
 newWorldButton.addEventListener('click', async e => {
   pe.reset();
   const hash = await pe.uploadScene();
@@ -2238,3 +2141,5 @@ window.addEventListener('popstate', e => {
   _handleUrl(window.location.href);
 });
 _handleUrl(window.location.href);
+
+attachEventListeners();
