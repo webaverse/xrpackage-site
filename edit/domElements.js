@@ -26,6 +26,9 @@ const inventoryCloseButton = inventorySubpage.querySelector('.close-button');
 const inventorySubtabContent = inventorySubpage.querySelector('.subtab-content');
 const avatarCloseButton = avatarSubpage.querySelector('.close-button');
 
+const scaleSlider = document.getElementById('scale-slider');
+const shieldSlider = document.getElementById('shield-slider');
+
 const sandboxButton = document.getElementById('sandbox-button');
 const newWorldButton = document.getElementById('new-world-button');
 
@@ -57,6 +60,9 @@ export {
   inventoryCloseButton,
   inventorySubtabContent,
   avatarCloseButton,
+
+  scaleSlider,
+  shieldSlider,
 
   sandboxButton,
   newWorldButton,
