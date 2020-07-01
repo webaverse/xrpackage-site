@@ -12,6 +12,8 @@ import './gif.js';
 // import {makeWristMenu, makeHighlightMesh, makeRayMesh} from './vr-ui.js';
 import {makeLineMesh, makeTeleportMesh} from './teleport.js';
 
+import targetMeshGeometry from './edit/targetMeshGeometry.js';
+
 const apiHost = 'https://ipfs.exokit.org/ipfs';
 const presenceEndpoint = 'wss://presence.exokit.org';
 const worldsEndpoint = 'https://worlds.exokit.org';
@@ -37,46 +39,6 @@ function parseQuery(queryString) {
   return query;
 }
 
-const targetMeshGeometry = (() => {
-  const targetGeometry = BufferGeometryUtils.mergeBufferGeometries([
-    new THREE.BoxBufferGeometry(0.03, 0.2, 0.03)
-      .applyMatrix4(new THREE.Matrix4().makeTranslation(0, -0.1, 0)),
-    new THREE.BoxBufferGeometry(0.03, 0.2, 0.03)
-      .applyMatrix4(new THREE.Matrix4().makeRotationFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, -1, 0), new THREE.Vector3(0, 0, 1))))
-      .applyMatrix4(new THREE.Matrix4().makeTranslation(0, 0, 0.1)),
-    new THREE.BoxBufferGeometry(0.03, 0.2, 0.03)
-      .applyMatrix4(new THREE.Matrix4().makeRotationFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, -1, 0), new THREE.Vector3(1, 0, 0))))
-      .applyMatrix4(new THREE.Matrix4().makeTranslation(0.1, 0, 0)),
-  ]);
-  return BufferGeometryUtils.mergeBufferGeometries([
-    targetGeometry.clone()
-      .applyMatrix4(new THREE.Matrix4().makeTranslation(-0.5, 0.5, -0.5)),
-    targetGeometry.clone()
-      .applyMatrix4(new THREE.Matrix4().makeRotationFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 0, -1), new THREE.Vector3(0, -1, 0))))
-      .applyMatrix4(new THREE.Matrix4().makeTranslation(-0.5, -0.5, -0.5)),
-    targetGeometry.clone()
-      .applyMatrix4(new THREE.Matrix4().makeRotationFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), new THREE.Vector3(0, 0, 1))))
-      .applyMatrix4(new THREE.Matrix4().makeTranslation(-0.5, 0.5, 0.5)),
-    targetGeometry.clone()
-      .applyMatrix4(new THREE.Matrix4().makeRotationFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), new THREE.Vector3(1, 0, 0))))
-      .applyMatrix4(new THREE.Matrix4().makeTranslation(0.5, 0.5, -0.5)),
-    targetGeometry.clone()
-      .applyMatrix4(new THREE.Matrix4().makeRotationFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), new THREE.Vector3(1, 0, 0))))
-      .applyMatrix4(new THREE.Matrix4().makeRotationFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), new THREE.Vector3(0, 0, 1))))
-      .applyMatrix4(new THREE.Matrix4().makeTranslation(0.5, 0.5, 0.5)),
-    targetGeometry.clone()
-      .applyMatrix4(new THREE.Matrix4().makeRotationFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), new THREE.Vector3(0, 0, 1))))
-      .applyMatrix4(new THREE.Matrix4().makeRotationFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(-1, 0, 0), new THREE.Vector3(0, -1, 0))))
-      .applyMatrix4(new THREE.Matrix4().makeTranslation(-0.5, -0.5, 0.5)),
-    targetGeometry.clone()
-      .applyMatrix4(new THREE.Matrix4().makeRotationFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), new THREE.Vector3(1, 0, 0))))
-      .applyMatrix4(new THREE.Matrix4().makeRotationFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(1, 0, 0), new THREE.Vector3(0, -1, 0))))
-      .applyMatrix4(new THREE.Matrix4().makeTranslation(0.5, -0.5, -0.5)),
-    targetGeometry.clone()
-      .applyMatrix4(new THREE.Matrix4().makeRotationFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(-1, 1, 0).normalize(), new THREE.Vector3(1, -1, 0).normalize())))
-      .applyMatrix4(new THREE.Matrix4().makeTranslation(0.5, -0.5, 0.5)),
-  ]);// .applyMatrix4(new THREE.Matrix4().makeTranslation(0, 0.5, 0));
-})();
 const targetVsh = `
   #define M_PI 3.1415926535897932384626433832795
   uniform float uTime;
@@ -748,14 +710,14 @@ document.getElementById('export-scene-button').addEventListener('click', async e
 const loadVsh = `
   #define M_PI 3.1415926535897932384626433832795
   uniform float uTime;
-  
+
   mat4 rotationMatrix(vec3 axis, float angle)
   {
       axis = normalize(axis);
       float s = sin(angle);
       float c = cos(angle);
       float oc = 1.0 - c;
-      
+
       return mat4(oc * axis.x * axis.x + c,           oc * axis.x * axis.y - axis.z * s,  oc * axis.z * axis.x + axis.y * s,  0.0,
                   oc * axis.x * axis.y + axis.z * s,  oc * axis.y * axis.y + c,           oc * axis.y * axis.z - axis.x * s,  0.0,
                   oc * axis.z * axis.x - axis.y * s,  oc * axis.y * axis.z + axis.x * s,  oc * axis.z * axis.z + c,           0.0,
@@ -1963,7 +1925,7 @@ const _bindObjectDetails = p => {
     scaleY,
     scaleZ,
   } = _getObjectDetailEls();
-  
+
   const _setPosition = (e, key) => {
     p.matrix.decompose(localVector, localQuaternion, localVector2);
     localVector[key] = parseFloat(e.target.value);
@@ -2144,7 +2106,7 @@ const _renderObjects = () => {
     removeButton.addEventListener('click', e => {
       pe.remove(p);
     });
- 
+
     _updateObjectDetailsTransform(p.matrix);
     _bindObjectDetails(p);
 
@@ -2225,7 +2187,7 @@ const _renderObjects = () => {
         });
       };
       _renderChildren(objectsEl, pe.children, 0);
-      
+
       // wristMenu.objectsSide.setObjects(pe.children);
     } else {
       objectsEl.innerHTML = `<h1 class=placeholder>No objects in scene</h1>`;
