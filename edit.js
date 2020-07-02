@@ -15,7 +15,7 @@ import dragHandlers from './edit/dragHandlers.js';
 import {updateWorldSaveButton, worldHandlers} from './edit/worlds.js';
 import {apiHost, contract, loadMeshMaterial} from './edit/constants.js';
 import {ensureLoadMesh, ensurePlaceholdMesh, ensureVolumeMesh} from './edit/meshes.js';
-import {packagesHandlers, startPackageDrag, addPackageFromHash} from './edit/packagesHandlers.js';
+import {packagesHandlers, startPackageDrag} from './edit/packagesHandlers.js';
 import {
   tabs, tabContents,
   scaleSlider, shieldSlider,
@@ -892,7 +892,7 @@ pe.domElement.addEventListener('drop', async e => {
       );
 
       const p = await XRPackage.download(dataHash);
-      await addPackage(p, localMatrix, pe);
+      await addPackage(p, pe, localMatrix);
     }
   }
 });

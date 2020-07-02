@@ -12,7 +12,7 @@ function parseQuery(queryString) {
   return query;
 }
 
-const addPackage = async (p, matrix, pe) => {
+const addPackage = async (p, pe, matrix) => {
   if (matrix) {
     p.setMatrix(matrix);
   }

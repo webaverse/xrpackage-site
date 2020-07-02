@@ -75,15 +75,6 @@ const _makePackageHtml = p => `
   </div>
 `;
 
-const addPackageFromHash = async (hash, matrix) => {
-  const p = await XRPackage.download(hash);
-  p.hash = hash;
-  if (matrix) {
-    p.setMatrix(matrix);
-  }
-  await pe.add(p);
-};
-
 const startPackageDrag = (e, j) => {
   e.dataTransfer.setData('application/json+package', JSON.stringify(j));
   setTimeout(() => {
@@ -104,7 +95,7 @@ const _bindPackage = (pE, pJ) => {
   const addButton = pE.querySelector('.add-button');
   addButton.addEventListener('click', async () => {
     const p = await XRPackage.download(dataHash);
-    await addPackage(p, undefined, pe);
+    await addPackage(p, pe);
   });
   const wearButton = pE.querySelector('.wear-button');
   wearButton.addEventListener('click', () => {
@@ -189,8 +180,4 @@ function packagesHandlers() {
   });
 }
 
-export {
-  packagesHandlers,
-  addPackageFromHash,
-  startPackageDrag,
-};
+export {packagesHandlers, startPackageDrag};
