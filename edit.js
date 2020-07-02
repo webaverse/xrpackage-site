@@ -13,7 +13,7 @@ import {handleUrl, addPackage} from './edit/utils.js';
 import attachEventListeners from './edit/classlistHandlers.js';
 import dragHandlers from './edit/dragHandlers.js';
 import {updateWorldSaveButton, worldHandlers} from './edit/worlds.js';
-import {apiHost, contract, loadMeshMaterial} from './edit/constants.js';
+import {apiHost, loadMeshMaterial} from './edit/constants.js';
 import {ensureLoadMesh, ensurePlaceholdMesh, ensureVolumeMesh} from './edit/meshes.js';
 import {packagesHandlers, startPackageDrag} from './edit/packagesHandlers.js';
 import {
@@ -856,7 +856,7 @@ for (let i = 0; i < tabs.length; i++) {
 }
 
 const tokens = document.getElementById('tokens');
-async function getTokenByIndex(index) {
+/* async function getTokenByIndex(index) {
   const metadataHash = await contract.methods.getMetadata(index, 'hash').call();
   const metadata = await fetch(`${apiHost}/${metadataHash}`).then(res => res.json());
   const {dataHash, screenshotHash, modelHash} = metadata;
@@ -868,7 +868,7 @@ async function getTokenByIndex(index) {
     dataHash: dataHash,
     modelHash: modelHash,
   };
-}
+} */
 pe.domElement.addEventListener('dragover', e => {
   e.preventDefault();
 });

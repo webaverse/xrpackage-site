@@ -1,6 +1,6 @@
 import {enterWorld} from './worlds.js';
 import {XRPackage} from '../run.js';
-import {packagesEndpoint, apiHost, contract} from './constants.js';
+import {packagesEndpoint, apiHost} from './constants.js';
 
 function parseQuery(queryString) {
   var query = {};
