@@ -1,7 +1,5 @@
-/* global Web3 */
 /* eslint no-unused-vars: 0 */
 import * as THREE from 'https://static.xrpackage.org/xrpackage/three.module.js';
-import {BufferGeometryUtils} from 'https://static.xrpackage.org/BufferGeometryUtils.js';
 import {TransformControls} from './TransformControls.js';
 // import address from 'https://contracts.webaverse.com/address.js';
 // import abi from 'https://contracts.webaverse.com/abi.js';
@@ -11,23 +9,19 @@ import {wireframeMaterial, getWireframeMesh, meshIdToArray, decorateRaycastMesh,
 // import {makeWristMenu, makeHighlightMesh, makeRayMesh} from './vr-ui.js';
 import {makeLineMesh, makeTeleportMesh} from './teleport.js';
 
+import {handleUrl, addPackage} from './edit/utils.js';
 import targetMeshGeometry from './edit/targetMeshGeometry.js';
 import attachEventListeners from './edit/classlistHandlers.js';
 import dragHandlers from './edit/dragHandlers.js';
-import screenshotEngine from './edit/screenshotEngine.js';
+import {updateWorldSaveButton, worldHandlers} from './edit/worlds.js';
+import {apiHost, packagesEndpoint, contract} from './edit/constants.js';
 import {
-  worldSaveButton, worldRevertButton, micButton, dropdownButton, sandboxButton, newWorldButton,
   packagesSubpage, inventorySubpage, avatarSubpage, avatarSubpageContent,
   tabs, tabContents, inventorySubtabContent,
   scaleSlider, shieldSlider,
-  runMode, editMode,
+  micButton, dropdownButton,
   dropdown,
 } from './edit/domElements.js';
-
-const apiHost = 'https://ipfs.exokit.org/ipfs';
-const presenceEndpoint = 'wss://presence.exokit.org';
-const worldsEndpoint = 'https://worlds.exokit.org';
-const packagesEndpoint = 'https://packages.exokit.org';
 
 const localVector = new THREE.Vector3();
 const localVector2 = new THREE.Vector3();
@@ -49,10 +43,8 @@ const keys = {
 
 let shieldLevel = parseInt(shieldSlider.value, 10);
 let selectedTool = 'camera';
-let currentWorldId = '';
 let hoverTarget = null;
 let selectTarget = null;
-let currentWorldChanged = false;
 let jumpState = null;
 
 const _resetKeys = () => {
@@ -60,16 +52,6 @@ const _resetKeys = () => {
     keys[k] = false;
   }
 };
-
-function parseQuery(queryString) {
-  var query = {};
-  var pairs = (queryString[0] === '?' ? queryString.substr(1) : queryString).split('&');
-  for (var i = 0; i < pairs.length; i++) {
-    var pair = pairs[i].split('=');
-    query[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1] || '');
-  }
-  return query;
-}
 
 const targetVsh = `
   #define M_PI 3.1415926535897932384626433832795
@@ -771,9 +753,9 @@ const loadMeshMaterial = new THREE.ShaderMaterial({
   side: THREE.DoubleSide,
 });
 const _makeLoadMesh = (() => {
-  const geometry = new THREE.RingBufferGeometry(0.05, 0.08, 128, 0, Math.PI/2, Math.PI*2*0.9)
-    // .applyMatrix4(new THREE.Matrix4().makeRotationFromQuaternion(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI)));
-  return() => {
+  const geometry = new THREE.RingBufferGeometry(0.05, 0.08, 128, 0, Math.PI / 2, Math.PI * 2 * 0.9);
+  // .applyMatrix4(new THREE.Matrix4().makeRotationFromQuaternion(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI)));
+  return () => {
     const mesh = new THREE.Mesh(geometry, loadMeshMaterial);
     // mesh.frustumCulled = false;
     return mesh;
@@ -873,10 +855,7 @@ const _packageadd = async e => {
 
   _bindObject(p);
 
-  if (!reason) {
-    currentWorldChanged = true;
-    _updateWorldSaveButton();
-  }
+  if (!reason) updateWorldSaveButton(true);
 };
 const _packageremove = e => {
   const {
@@ -900,21 +879,9 @@ const _packageremove = e => {
 
   _unbindObject(p);
 
-  if (!reason) {
-    currentWorldChanged = true;
-    _updateWorldSaveButton();
-  }
+  if (!reason) updateWorldSaveButton(true);
 };
 
-const _updateWorldSaveButton = () => {
-  if (currentWorldChanged && currentWorldId) {
-    worldSaveButton.classList.remove('hidden');
-    worldRevertButton.classList.remove('hidden');
-  } else {
-    worldSaveButton.classList.add('hidden');
-    worldRevertButton.classList.add('hidden');
-  }
-};
 function _matrixUpdate(e) {
   const p = this;
   const matrix = e.data;
@@ -1081,164 +1048,6 @@ for (let i = 0; i < inventorySubtabs.length; i++) {
   });
 } */
 
-worldSaveButton.addEventListener('click', async e => {
-  const {name} = pe;
-  const hash = await pe.uploadScene();
-
-  const screenshotBlob = await screenshotEngine(pe);
-  const {hash: previewIconHash} = await fetch(`${apiHost}/`, {
-    method: 'PUT',
-    body: screenshotBlob,
-  })
-    .then(res => res.json());
-
-  const objects = await Promise.all(pe.children.map(async p => {
-    const {name, hash} = p;
-    const previewIconHash = await (async () => {
-      const screenshotImgUrl = await p.getScreenshotImageUrl();
-      if (screenshotImgUrl) {
-        const screenshotBlob = await fetch(screenshotImgUrl)
-          .then(res => res.blob());
-        const {hash: previewIconHash} = await fetch(`${apiHost}/`, {
-          method: 'PUT',
-          body: screenshotBlob,
-        })
-          .then(res => res.json());
-        return previewIconHash;
-      } else {
-        return null;
-      }
-    })();
-    return {
-      name,
-      previewIconHash,
-    };
-  }));
-  const w = {
-    id: currentWorldId,
-    name,
-    description: 'This is a world description',
-    hash,
-    previewIconHash,
-    objects,
-  };
-  const res = await fetch(worldsEndpoint + '/' + currentWorldId, {
-    method: 'PUT',
-    body: JSON.stringify(w),
-  });
-  if (res.ok) {
-    // nothing
-  } else {
-    console.warn('invalid status code: ' + res.status);
-  }
-
-  currentWorldChanged = false;
-  _updateWorldSaveButton();
-});
-worldRevertButton.addEventListener('click', async e => {
-  _enterWorld(currentWorldId);
-});
-
-const worlds = document.getElementById('worlds');
-const _makeWorldHtml = w => `
-  <div class="world ${currentWorldId === w.id ? 'open' : ''}" worldId="${w.id}">
-    <img src=assets/question.png>
-    <div class="text">
-      <input type=text class=name-input value="${w.name}" disabled>
-    </div>
-    <div class=background>
-      <nav class="button rename-button">Rename</nav>
-    </div>
-  </div>
-`;
-
-// const headerLabel = document.getElementById('header-label');
-const _enterWorld = async worldId => {
-  currentWorldId = worldId;
-
-  /* headerLabel.innerText = name || 'Sandbox';
-  runMode.setAttribute('href', 'run.html' + (worldId ? ('?w=' + worldId) : ''));
-  editMode.setAttribute('href', 'edit.html' + (worldId ? ('?w=' + worldId) : '')); */
-
-  const worlds = Array.from(document.querySelectorAll('.world'));
-  worlds.forEach(world => {
-    world.classList.remove('open');
-  });
-  let world;
-  if (worldId) {
-    world = worlds.find(w => w.getAttribute('worldId') === worldId);
-  } else {
-    world = worlds[0];
-  }
-  world && world.classList.add('open');
-
-  if (worldId) {
-    const res = await fetch(worldsEndpoint + '/' + worldId);
-    if (res.ok) {
-      const j = await res.json();
-      const {hash} = j;
-      await pe.downloadScene(hash);
-    } else {
-      console.warn('invalid world status code: ' + worldId + ' ' + res.status);
-    }
-  } else {
-    pe.reset();
-  }
-
-  currentWorldChanged = false;
-  _updateWorldSaveButton();
-};
-const _pushWorld = name => {
-  history.pushState({}, '', window.location.protocol + '//' + window.location.host + window.location.pathname + (name ? ('?w=' + name) : ''));
-  _handleUrl(window.location.href);
-};
-const _bindWorld = w => {
-  w.addEventListener('click', async e => {
-    const worldId = w.getAttribute('worldId');
-    if (worldId !== currentWorldId) {
-      _pushWorld(worldId);
-    }
-  });
-  const nameInput = w.querySelector('.name-input');
-  const renameButton = w.querySelector('.rename-button');
-  let oldValue = '';
-  renameButton.addEventListener('click', e => {
-    e.preventDefault();
-    e.stopPropagation();
-
-    w.classList.add('renaming');
-    oldValue = nameInput.value;
-    nameInput.removeAttribute('disabled');
-    nameInput.select();
-  });
-  nameInput.addEventListener('blur', e => {
-    nameInput.value = oldValue;
-    nameInput.setAttribute('disabled', '');
-    oldValue = '';
-  });
-  nameInput.addEventListener('keydown', e => {
-    if (e.which === 13) { // enter
-      pe.name = nameInput.value;
-      currentWorldChanged = true;
-      _updateWorldSaveButton();
-
-      oldValue = nameInput.value;
-      nameInput.blur();
-    } else if (e.which === 27) { // esc
-      nameInput.blur();
-    }
-  });
-};
-(async () => {
-  const res = await fetch(worldsEndpoint);
-  const children = await res.json();
-  const ws = await Promise.all(children.map(child =>
-    fetch(worldsEndpoint + '/' + child)
-      .then(res => res.json()),
-  ));
-  worlds.innerHTML = ws.map(w => _makeWorldHtml(w)).join('\n');
-  Array.from(worlds.querySelectorAll('.world')).forEach((w, i) => _bindWorld(w, ws[i]));
-})();
 /* let worldType = 'singleplayer';
 const singleplayerButton = document.getElementById('singleplayer-button');
 singleplayerButton.addEventListener('click', e => {
@@ -1352,7 +1161,7 @@ const _changeInventory = inventory => {
           URL.revokeObjectURL(u);
         };
       } else { */
-        img.src = `${apiHost}/${iconHash}.gif`;
+      img.src = `${apiHost}/${iconHash}.gif`;
       // }
     })();
     const wearButton = itemEl.querySelector('.wear-button');
@@ -1389,12 +1198,6 @@ const _makePackageHtml = p => `
     </div>
   </div>
 `;
-async function _addPackage(p, matrix) {
-  if (matrix) {
-    p.setMatrix(matrix);
-  }
-  await pe.add(p);
-}
 const _startPackageDrag = (e, j) => {
   e.dataTransfer.setData('application/json+package', JSON.stringify(j));
   setTimeout(() => {
@@ -1414,7 +1217,7 @@ const _bindPackage = (pE, pJ) => {
   const addButton = pE.querySelector('.add-button');
   addButton.addEventListener('click', async () => {
     const p = await XRPackage.download(dataHash);
-    await _addPackage(p);
+    await addPackage(p, undefined, pe);
   });
   const wearButton = pE.querySelector('.wear-button');
   wearButton.addEventListener('click', () => {
@@ -1475,11 +1278,11 @@ pe.domElement.addEventListener('drop', async e => {
         raycaster.ray.origin.clone()
           .add(raycaster.ray.direction.clone().multiplyScalar(2)),
         new THREE.Quaternion(),
-        new THREE.Vector3(1, 1, 1)
-      )
+        new THREE.Vector3(1, 1, 1),
+      );
 
       const p = await XRPackage.download(dataHash);
-      await _addPackage(p, localMatrix);
+      await addPackage(p, localMatrix, pe);
     }
   }
 });
@@ -1579,46 +1382,6 @@ publishWorldButton.addEventListener('click', async e => {
     console.warn('invalid status code: ' + res.status);
   }
 }); */
-
-sandboxButton.addEventListener('click', e => {
-  _pushWorld(null);
-});
-function makeId(length) {
-  var result = '';
-  var characters = 'abcdefghijklmnopqrstuvwxyz0123456789';
-  var charactersLength = characters.length;
-  for (var i = 0; i < length; i++) {
-    result += characters.charAt(Math.floor(Math.random() * charactersLength));
-  }
-  return result;
-}
-
-newWorldButton.addEventListener('click', async e => {
-  pe.reset();
-  const hash = await pe.uploadScene();
-
-  const worldId = makeId(8);
-  const w = {
-    id: worldId,
-    name: worldId,
-    description: 'This is a world description',
-    hash,
-    objects: [],
-  };
-  const res = await fetch(worldsEndpoint + '/' + w.name, {
-    method: 'PUT',
-    body: JSON.stringify(w),
-  });
-  if (res.ok) {
-    worlds.innerHTML += '\n' + _makeWorldHtml(w);
-    const ws = Array.from(worlds.querySelectorAll('.world'));
-    Array.from(worlds.querySelectorAll('.world')).forEach(w => _bindWorld(w));
-    const newW = ws[ws.length - 1];
-    newW.click();
-  } else {
-    console.warn('invalid status code: ' + res.status);
-  }
-});
 
 const objectsEl = document.getElementById('objects');
 const _getObjectDetailEls = () => {
@@ -1957,54 +1720,16 @@ const _renderObjects = () => {
 
       // wristMenu.objectsSide.setObjects(pe.children);
     } else {
-      objectsEl.innerHTML = `<h1 class=placeholder>No objects in scene</h1>`;
+      objectsEl.innerHTML = '<h1 class=placeholder>No objects in scene</h1>';
     }
   }
 };
 _renderObjects();
-const _handleUrl = async u => {
-  const {search} = new URL(u);
-  const q = parseQuery(search);
-
-  if (q.p) { // package
-    const metadata = await fetch(packagesEndpoint + '/' + q.p)
-      .then(res => res.json())
-    const {dataHash} = metadata;
-
-    const arrayBuffer = await fetch(`${apiHost}/${dataHash}.wbn`)
-      .then(res => res.arrayBuffer());
-
-    const p = new XRPackage(new Uint8Array(arrayBuffer));
-    await _addPackage(p);
-  } else if (q.i) { // index
-    const metadataHash = await contract.methods.getMetadata(parseInt(q.i, 10), 'hash').call();
-    const metadata = await fetch(`${apiHost}/${metadataHash}`)
-      .then(res => res.json());
-    const {dataHash} = metadata;
-
-    const arrayBuffer = await fetch(`${apiHost}/${dataHash}.wbn`)
-      .then(res => res.arrayBuffer());
-
-    const p = new XRPackage(new Uint8Array(arrayBuffer));
-    await _addPackage(p);
-  } else if (q.u) { // url
-    const arrayBuffer = await fetch(q.u)
-      .then(res => res.arrayBuffer());
-
-    const p = new XRPackage(new Uint8Array(arrayBuffer));
-    await pe.add(p);
-  } else if (q.h) { // hash
-    const p = await XRPackage.download(q.h);
-    await _addPackage(p);
-  } else {
-    const w = q.w || null;
-    _enterWorld(w);
-  }
-};
 window.addEventListener('popstate', e => {
-  _handleUrl(window.location.href);
+  handleUrl(window.location.href, pe);
 });
-_handleUrl(window.location.href);
+handleUrl(window.location.href, pe);
 
 attachEventListeners();
 dragHandlers(pe, loginManager);
+worldHandlers(pe);
