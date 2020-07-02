@@ -1,3 +1,5 @@
+import {downloadFile} from 'https://static.xrpackage.org/xrpackage/util.js';
+
 import screenshotEngine from './screenshotEngine.js';
 import {handleUrl} from './utils.js';
 import {
@@ -228,6 +230,127 @@ function worldHandlers(pe) {
     worlds.innerHTML = ws.map(w => _makeWorldHtml(w)).join('\n');
     Array.from(worlds.querySelectorAll('.world')).forEach((w, i) => _bindWorld(w, pe));
   })();
+
+  /* document.getElementById('world-name').addEventListener('change', e => {
+  pe.name = e.target.value;
+}); */
+  document.getElementById('reset-scene-button').addEventListener('click', e => {
+    pe.reset();
+  });
+  /* document.getElementById('publish-scene-button').addEventListener('click', async e => {
+  const hash = await pe.uploadScene();
+  const res = await fetch(scenesEndpoint + '/' + hash, {
+    method: 'PUT',
+    body: JSON.stringify({
+      name: pe.name,
+      hash,
+    }),
+  });
+  if (res.ok) {
+    // nothing
+  } else {
+    console.warn('invalid status code: ' + res.status);
+  }
+}); */
+  document.getElementById('export-scene-button').addEventListener('click', async e => {
+    const uint8Array = await pe.exportScene();
+    const b = new Blob([uint8Array], {
+      type: 'application/webbundle',
+    });
+    downloadFile(b, 'scene.wbn');
+  });
+
+  /* const worldTools = document.getElementById('world-tools');
+  const publishWorldButton = document.getElementById('publish-world-button');
+  const singleplayerButton = document.getElementById('singleplayer-button');
+  const multiplayerButton = document.getElementById('multiplayer-button');
+  let worldType = 'singleplayer';
+
+  singleplayerButton.addEventListener('click', e => {
+    pe.reset();
+
+    singleplayerButton.classList.add('open');
+    multiplayerButton.classList.remove('open');
+    Array.from(worlds.querySelectorAll('.world')).forEach(w => {
+      w.classList.remove('open');
+    });
+    worldType = 'singleplayer';
+    worldTools.style.visibility = null;
+  });
+
+  multiplayerButton.addEventListener('click', async e => {
+    pe.reset();
+
+    singleplayerButton.classList.remove('open');
+    multiplayerButton.classList.add('open');
+    Array.from(worlds.querySelectorAll('.world')).forEach(w => {
+      w.classList.remove('open');
+    });
+    worldType = 'multiplayer';
+    worldTools.style.visibility = null;
+  });
+
+  publishWorldButton.addEventListener('click', async e => {
+    let hash;
+    if (worldType === 'singleplayer') {
+      hash = await pe.uploadScene();
+    } else if (worldType === 'multiplayer') {
+      const array = new Uint8Array(32);
+      crypto.getRandomValues(array);
+      hash = Array.prototype.map.call(array, x => ('00' + x.toString(16)).slice(-2)).join('');
+    }
+
+    const w = {
+      name: 'WebXR world',
+      description: 'This is a world description',
+      hash,
+      type: worldType,
+    };
+    const res = await fetch(worldsEndpoint + '/' + hash, {
+      method: 'PUT',
+      body: JSON.stringify(w),
+    });
+    if (res.ok) {
+      worlds.innerHTML += '\n' + _makeWorldHtml(w);
+      const ws = Array.from(worlds.querySelectorAll('.world'));
+      Array.from(worlds.querySelectorAll('.world')).forEach(w => _bindWorld(w));
+      const newW = ws[ws.length - 1];
+      newW.click();
+    } else {
+      console.warn('invalid status code: ' + res.status);
+    }
+  }); */
+
+  /* for (let i = 0; i < worldsSubtabs.length; i++) {
+    const subtab = worldsSubtabs[i];
+    const subtabContent = worldsSubtabContents[i];
+    subtab.addEventListener('click', e => {
+      for (let i = 0; i < worldsSubtabs.length; i++) {
+        const subtab = worldsSubtabs[i];
+        const subtabContent = worldsSubtabContents[i];
+        subtab.classList.remove('open');
+        subtabContent.classList.remove('open');
+      }
+
+      subtab.classList.add('open');
+      subtabContent.classList.add('open');
+    });
+  }
+  for (let i = 0; i < inventorySubtabs.length; i++) {
+    const subtab = inventorySubtabs[i];
+    const subtabContent = inventorySubtabContents[i];
+    subtab.addEventListener('click', e => {
+      for (let i = 0; i < inventorySubtabs.length; i++) {
+        const subtab = inventorySubtabs[i];
+        const subtabContent = inventorySubtabContents[i];
+        subtab.classList.remove('open');
+        subtabContent.classList.remove('open');
+      }
+
+      subtab.classList.add('open');
+      subtabContent.classList.add('open');
+    });
+  } */
 }
 
 export {updateWorldSaveButton, worldHandlers, enterWorld};

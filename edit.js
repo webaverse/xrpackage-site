@@ -4,7 +4,7 @@ import {TransformControls} from './TransformControls.js';
 // import address from 'https://contracts.webaverse.com/address.js';
 // import abi from 'https://contracts.webaverse.com/abi.js';
 import {XRPackage, pe, renderer, scene, camera, floorMesh, proxySession, getRealSession, loginManager} from './run.js';
-import {downloadFile, readFile, bindUploadFileButton} from 'https://static.xrpackage.org/xrpackage/util.js';
+import {readFile, bindUploadFileButton} from 'https://static.xrpackage.org/xrpackage/util.js';
 import {wireframeMaterial, getWireframeMesh, meshIdToArray, decorateRaycastMesh, VolumeRaycaster} from './volume.js';
 // import {makeWristMenu, makeHighlightMesh, makeRayMesh} from './vr-ui.js';
 import {makeLineMesh, makeTeleportMesh} from './teleport.js';
@@ -679,34 +679,6 @@ window.addEventListener('mouseup', e => {
   lastTeleport = false;
 });
 
-/* document.getElementById('world-name').addEventListener('change', e => {
-  pe.name = e.target.value;
-}); */
-document.getElementById('reset-scene-button').addEventListener('click', e => {
-  pe.reset();
-});
-/* document.getElementById('publish-scene-button').addEventListener('click', async e => {
-  const hash = await pe.uploadScene();
-  const res = await fetch(scenesEndpoint + '/' + hash, {
-    method: 'PUT',
-    body: JSON.stringify({
-      name: pe.name,
-      hash,
-    }),
-  });
-  if (res.ok) {
-    // nothing
-  } else {
-    console.warn('invalid status code: ' + res.status);
-  }
-}); */
-document.getElementById('export-scene-button').addEventListener('click', async e => {
-  const uint8Array = await pe.exportScene();
-  const b = new Blob([uint8Array], {
-    type: 'application/webbundle',
-  });
-  downloadFile(b, 'scene.wbn');
-});
 const loadVsh = `
   #define M_PI 3.1415926535897932384626433832795
   uniform float uTime;
@@ -1017,62 +989,6 @@ for (let i = 0; i < tabs.length; i++) {
     _setSelectTarget(null);
   });
 }
-/* for (let i = 0; i < worldsSubtabs.length; i++) {
-  const subtab = worldsSubtabs[i];
-  const subtabContent = worldsSubtabContents[i];
-  subtab.addEventListener('click', e => {
-    for (let i = 0; i < worldsSubtabs.length; i++) {
-      const subtab = worldsSubtabs[i];
-      const subtabContent = worldsSubtabContents[i];
-      subtab.classList.remove('open');
-      subtabContent.classList.remove('open');
-    }
-
-    subtab.classList.add('open');
-    subtabContent.classList.add('open');
-  });
-}
-for (let i = 0; i < inventorySubtabs.length; i++) {
-  const subtab = inventorySubtabs[i];
-  const subtabContent = inventorySubtabContents[i];
-  subtab.addEventListener('click', e => {
-    for (let i = 0; i < inventorySubtabs.length; i++) {
-      const subtab = inventorySubtabs[i];
-      const subtabContent = inventorySubtabContents[i];
-      subtab.classList.remove('open');
-      subtabContent.classList.remove('open');
-    }
-
-    subtab.classList.add('open');
-    subtabContent.classList.add('open');
-  });
-} */
-
-/* let worldType = 'singleplayer';
-const singleplayerButton = document.getElementById('singleplayer-button');
-singleplayerButton.addEventListener('click', e => {
-  pe.reset();
-
-  singleplayerButton.classList.add('open');
-  multiplayerButton.classList.remove('open');
-  Array.from(worlds.querySelectorAll('.world')).forEach(w => {
-    w.classList.remove('open');
-  });
-  worldType = 'singleplayer';
-  worldTools.style.visibility = null;
-});
-const multiplayerButton = document.getElementById('multiplayer-button');
-multiplayerButton.addEventListener('click', async e => {
-  pe.reset();
-
-  singleplayerButton.classList.remove('open');
-  multiplayerButton.classList.add('open');
-  Array.from(worlds.querySelectorAll('.world')).forEach(w => {
-    w.classList.remove('open');
-  });
-  worldType = 'multiplayer';
-  worldTools.style.visibility = null;
-}); */
 
 window.addEventListener('avatarchange', e => {
   const p = e.data;
@@ -1349,39 +1265,7 @@ pe.domElement.addEventListener('drop', async e => {
       pe.downloadScene(hash);
     });
   });
-})();
-const worldTools = document.getElementById('world-tools');
-const publishWorldButton = document.getElementById('publish-world-button');
-publishWorldButton.addEventListener('click', async e => {
-  let hash;
-  if (worldType === 'singleplayer') {
-    hash = await pe.uploadScene();
-  } else if (worldType === 'multiplayer') {
-    const array = new Uint8Array(32);
-    crypto.getRandomValues(array);
-    hash = Array.prototype.map.call(array, x => ('00' + x.toString(16)).slice(-2)).join('');
-  }
-
-  const w = {
-    name: 'WebXR world',
-    description: 'This is a world description',
-    hash,
-    type: worldType,
-  };
-  const res = await fetch(worldsEndpoint + '/' + hash, {
-    method: 'PUT',
-    body: JSON.stringify(w),
-  });
-  if (res.ok) {
-    worlds.innerHTML += '\n' + _makeWorldHtml(w);
-    const ws = Array.from(worlds.querySelectorAll('.world'));
-    Array.from(worlds.querySelectorAll('.world')).forEach(w => _bindWorld(w));
-    const newW = ws[ws.length - 1];
-    newW.click();
-  } else {
-    console.warn('invalid status code: ' + res.status);
-  }
-}); */
+})(); */
 
 const objectsEl = document.getElementById('objects');
 const _getObjectDetailEls = () => {
