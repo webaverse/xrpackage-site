@@ -1,7 +1,7 @@
 import * as THREE from 'https://static.xrpackage.org/xrpackage/three.module.js';
-import {getWireframeMesh, decorateRaycastMesh} from './volume.js';
+import {getWireframeMesh, decorateRaycastMesh} from '../volume.js';
 import {loadMeshMaterial} from './constants.js';
-import targetMeshGeometry from './edit/targetMeshGeometry.js';
+import targetMeshGeometry from './targetMeshGeometry.js';
 
 const targetVsh = `
 #define M_PI 3.1415926535897932384626433832795
