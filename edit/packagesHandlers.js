@@ -119,7 +119,8 @@ function packagesHandlers() {
   const packages = document.getElementById('packages');
   (async () => {
     const res = await fetch(packagesEndpoint);
-    const children = await res.json();
+    const s = await res.text();
+    const children = JSON.parse(s);
     const ps = await Promise.all(children.map(child =>
       fetch(packagesEndpoint + '/' + child)
         .then(res => res.json()),
