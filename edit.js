@@ -11,7 +11,7 @@ import {wireframeMaterial, getWireframeMesh, meshIdToArray, decorateRaycastMesh,
 import './gif.js';
 // import {makeWristMenu, makeHighlightMesh, makeRayMesh} from './vr-ui.js';
 import {makeLineMesh, makeTeleportMesh} from './teleport.js';
-import { apiOrigin } from './constants.js';
+import { apiHost } from './constants.js';
 
 const presenceEndpoint = 'wss://presence.exokit.org';
 const worldsEndpoint = 'https://worlds.exokit.org';
@@ -1299,7 +1299,7 @@ worldSaveButton.addEventListener('click', async e => {
   const hash = await pe.uploadScene();
 
   const screenshotBlob = await screenshotEngine();
-  const {hash: previewIconHash} = await fetch(`${apiOrigin}/`, {
+  const {hash: previewIconHash} = await fetch(`${apiHost}/ipfs/`, {
     method: 'PUT',
     body: screenshotBlob,
   })
@@ -1312,7 +1312,7 @@ worldSaveButton.addEventListener('click', async e => {
       if (screenshotImgUrl) {
         const screenshotBlob = await fetch(screenshotImgUrl)
           .then(res => res.blob());
-        const {hash: previewIconHash} = await fetch(`${apiOrigin}/`, {
+        const {hash: previewIconHash} = await fetch(`${apiHost}/ipfs/`, {
           method: 'PUT',
           body: screenshotBlob,
         })
@@ -1355,7 +1355,7 @@ worldRevertButton.addEventListener('click', async e => {
 const worlds = document.getElementById('worlds');
 const _makeWorldHtml = w => `
   <div class="world ${currentWorldId === w.id ? 'open' : ''}" worldId="${w.id}">
-    <img src=${w.previewIconHash ? `${apiOrigin}/${w.previewIconHash}.gif` : 'assets/question.png'}>
+    <img src=${w.previewIconHash ? `${apiHost}/ipfs/${w.previewIconHash}.gif` : 'assets/question.png'}>
     <div class="text">
       <input type=text class=name-input value="${w.name}" disabled>
     </div>
@@ -1639,7 +1639,7 @@ const _changeInventory = inventory => {
           URL.revokeObjectURL(u);
         };
       } else { */
-        img.src = `${apiOrigin}/${iconHash}.gif`;
+        img.src = `${apiHost}/ipfs/${iconHash}.gif`;
       // }
     })();
     const wearButton = itemEl.querySelector('.wear-button');
@@ -1665,7 +1665,7 @@ loginManager.addEventListener('inventorychange', async e => {
 const _makePackageHtml = p => `
   <div class=package draggable=true data-name=${p.name}>
     <!-- <img src="assets/question.png"> -->
-    <img src="${apiOrigin}/${p.icons[0].hash}.gif" width=256 height=256>
+    <img src="${apiHost}/ipfs/${p.icons[0].hash}.gif" width=256 height=256>
     <div class=text>
       <div class=name>${p.name}</div>
     </div>
@@ -1732,12 +1732,12 @@ let s;
 const tokens = document.getElementById('tokens');
 async function getTokenByIndex(index) {
   const metadataHash = await contract.methods.getMetadata(index, 'hash').call();
-  const metadata = await fetch(`${apiOrigin}/${metadataHash}`).then(res => res.json());
+  const metadata = await fetch(`${apiHost}/ipfs/${metadataHash}`).then(res => res.json());
   const {dataHash, screenshotHash, modelHash} = metadata;
   return {
     index: index,
     name: metadata.objectName,
-    img: `${apiOrigin}/${screenshotHash}`,
+    img: `${apiHost}/ipfs/${screenshotHash}`,
     metadataHash: metadataHash,
     dataHash: dataHash,
     modelHash: modelHash,
@@ -1885,7 +1885,7 @@ newWorldButton.addEventListener('click', async e => {
   const hash = await pe.uploadScene();
 
   const screenshotBlob = await screenshotEngine();
-  const {hash: previewIconHash} = await fetch(`${apiOrigin}/`, {
+  const {hash: previewIconHash} = await fetch(`${apiHost}/ipfs/`, {
     method: 'PUT',
     body: screenshotBlob,
   })
@@ -2155,7 +2155,7 @@ const _renderObjects = () => {
     } else {
       const uploadButton = objectsEl.querySelector('.upload-button');
       uploadButton.addEventListener('click', async e => {
-        const {hash} = await fetch(`${apiOrigin}/`, {
+        const {hash} = await fetch(`${apiHost}/ipfs/`, {
           method: 'PUT',
           body: p.data,
         })
@@ -2266,18 +2266,18 @@ const _handleUrl = async u => {
       .then(res => res.json())
     const {dataHash} = metadata;
 
-    const arrayBuffer = await fetch(`${apiOrigin}/${dataHash}.wbn`)
+    const arrayBuffer = await fetch(`${apiHost}/ipfs/${dataHash}.wbn`)
       .then(res => res.arrayBuffer());
 
     const p = new XRPackage(new Uint8Array(arrayBuffer));
     await _addPackage(p);
   } else if (q.i) { // index
     const metadataHash = await contract.methods.getMetadata(parseInt(q.i, 10), 'hash').call();
-    const metadata = await fetch(`${apiOrigin}/${metadataHash}`)
+    const metadata = await fetch(`${apiHost}/ipfs/${metadataHash}`)
       .then(res => res.json());
     const {dataHash} = metadata;
 
-    const arrayBuffer = await fetch(`${apiOrigin}/${dataHash}.wbn`)
+    const arrayBuffer = await fetch(`${apiHost}/ipfs/${dataHash}.wbn`)
       .then(res => res.arrayBuffer());
 
     const p = new XRPackage(new Uint8Array(arrayBuffer));
