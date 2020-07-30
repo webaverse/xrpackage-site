@@ -62,14 +62,17 @@
     <form id=login-form></form>
   </header>
 
-<script type=module>
-import THREE from 'https://static.xrpackage.org/xrpackage/three.module.js';
-import {XRPackage} from 'https://static.xrpackage.org/xrpackage.js';
-import {pe} from './run.js';
+<script type=module>  
+import { XRPackage, XRPackageEngine } from 'https://static.xrpackage.org/xrpackage.js';
+import { pe } from './run.js';
+import * as THREE from 'https://static.xrpackage.org/xrpackage/three.module.js';
 import './selector.js';
-
 const apiHost = `https://ipfs.exokit.org/ipfs`;
 const packagesEndpoint = 'https://packages.exokit.org';
+
+window.XRPackage = XRPackage;
+window.XRPackageEngine = XRPackageEngine;
+window.THREE = THREE;
 
 (async () => {
   function parseQuery(queryString) {

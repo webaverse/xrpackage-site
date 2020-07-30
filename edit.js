@@ -1,16 +1,16 @@
 /* global Web3 */
 /* eslint no-unused-vars: 0 */
-import * as THREE from 'https://static.xrpackage.org/xrpackage/three.module.js';
-import {BufferGeometryUtils} from 'https://static.xrpackage.org/BufferGeometryUtils.js';
 import {TransformControls} from './TransformControls.js';
 // import address from 'https://contracts.webaverse.com/address.js';
 // import abi from 'https://contracts.webaverse.com/abi.js';
 import {XRPackage, pe, renderer, scene, camera, floorMesh, proxySession, getRealSession, loginManager} from './run.js';
-import {downloadFile, readFile, bindUploadFileButton} from 'https://static.xrpackage.org/xrpackage/util.js';
+import {downloadFile, readFile, bindUploadFileButton} from './utils.js';
 import {wireframeMaterial, getWireframeMesh, meshIdToArray, decorateRaycastMesh, VolumeRaycaster} from './volume.js';
 import './gif.js';
 // import {makeWristMenu, makeHighlightMesh, makeRayMesh} from './vr-ui.js';
 import {makeLineMesh, makeTeleportMesh} from './teleport.js';
+
+const BufferGeometryUtils = window.BufferGeometryUtils;
 
 const apiHost = 'https://ipfs.exokit.org/ipfs';
 const presenceEndpoint = 'wss://presence.exokit.org';

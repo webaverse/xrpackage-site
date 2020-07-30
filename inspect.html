@@ -148,6 +148,19 @@
       </div>
     </section>
   </div>
+  <script type=module>
+    import { XRPackage, XRPackageEngine } from 'https://static.xrpackage.org/xrpackage.js';
+    import * as THREE from 'https://static.xrpackage.org/xrpackage/three.module.js';
+    import { OrbitControls } from 'https://static.xrpackage.org/xrpackage/OrbitControls.js';
+    import address from 'https://contracts.webaverse.com/address.js';
+    import abi from 'https://contracts.webaverse.com/abi.js';
+    window.XRPackage = XRPackage;
+    window.XRPackageEngine = XRPackageEngine;
+    window.OrbitControls = OrbitControls;
+    window.THREE = THREE;
+    window.contractAddress = address;
+    window.contractAbi = abi;
+  </script>
   <script type=module src='inspect.js'></script>
 </body>
 

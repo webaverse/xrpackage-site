@@ -1,12 +1,14 @@
 /* eslint-disable no-inner-declarations */
 
-import THREE from 'https://static.xrpackage.org/xrpackage/three.module.js';
-import {XRPackage, XRPackageEngine} from 'https://static.xrpackage.org/xrpackage.js';
-import {GLTFExporter} from 'https://static.xrpackage.org/GLTFExporter.js';
-import {OrbitControls} from 'https://static.xrpackage.org/xrpackage/OrbitControls.js';
 import {getWireframeMesh, getDefaultAabb, getPreviewMesh} from './volume.js';
-import {readFile} from 'https://static.xrpackage.org/xrpackage/util.js';
+import {readFile} from './utils.js';
 import {screenshotEngine} from './screenshot-object.js';
+
+const XRPackageEngine = window.XRPackageEngine
+const XRPackage = window.XRPackage
+const THREE = window.THREE
+const OrbitControls = window.OrbitControls
+const GLTFExporter = window.GLTFExporter
 
 const screenshotHeaderEl = document.getElementById('screenshot-header');
 const screenshotResultEl = document.getElementById('screenshot-result');

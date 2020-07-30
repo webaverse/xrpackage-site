@@ -2,7 +2,7 @@
  * @author arodic / https://github.com/arodic
  */
 
-import {
+const {
 	BoxBufferGeometry,
 	BufferGeometry,
 	Color,
@@ -23,7 +23,7 @@ import {
 	SphereBufferGeometry,
 	TorusBufferGeometry,
 	Vector3
-} from "https://static.xrpackage.org/xrpackage/three.module.js";
+} = window.THREE;
 
 var TransformControls = function ( camera, domElement, document ) {
 
@@ -753,7 +753,6 @@ TransformControls.prototype = Object.assign( Object.create( Object3D.prototype )
 
 var TransformControlsGizmo = function () {
 
-	'use strict';
 
 	Object3D.call( this );
 
