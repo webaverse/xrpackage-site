@@ -331,8 +331,17 @@ planet.writeSubparcels = async edits => {
   await _lockAll(keys);
   const promises = edits.map(async ([key, arrayBuffer]) => storage.setRaw(`chunks/${key}`, arrayBuffer));
   await Promise.all(promises);
-  channelConnection.runCode({ script: edits, numArgs: 0 });
-  _unlockAll(keys);
+  let responses = [];
+  channelConnection.addEventListener('edit', e => {
+    responses.push(e)
+    if (responses.length === edits.length) {
+      _unlockAll(keys);
+      channelConnection.removeEventListener('edit');
+    }
+  });
+  edits.forEach(edit => {
+    channelConnection.runCode({ script: edit, numArgs: 0 });
+  })
 };
 planet.onRemoteSubparcelsEdit = (edits) => {
   // XXX called from the connection when a peer runs an edit g
