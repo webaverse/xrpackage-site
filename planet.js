@@ -308,34 +308,30 @@ const _unlockAll = keys => {
 };
 planet.requestRemoteSubparcels = async (keys) => {
   // XXX return array of subparcel data or null if did not exist
-  
   await _lockAll(keys);
   const promises = keys.map(key => storage.getRaw(`chunks/${key}`));
   const result = await Promise.all(promises);
-  _unlockAll(keys);
-  return result;
 
   let parcels = [];
-  channelConnection.addEventListener('getAllKeys', e => {
-    console.log(e) // list of keys to update
-    e.data.forEach(key => {
-      channelConnection.getFile(key);
-    })
-  }, {once: true});
   channelConnection.addEventListener('getFile', e => {
     console.log(e) // requested file
     parcels.push(e)
-  }, {once: true});
-  channelConnection.getAllKeys();
-
-  channelConnection.dialogClient._protoo._transport._ws.send(new ArrayBuffer(100));
-  return [null, new ArrayBuffer(8), null];
+    if (parcels.length === keys.length) {
+      _unlockAll(keys);
+      channelConnection.removeEventListener('getFile');
+      return result;
+    }
+  });
+  keys.forEach(key => {
+    channelConnection.getFile(key);
+  })
 };
 planet.writeSubparcels = async edits => {
   const keys = edits.map(([key]) => key);
   await _lockAll(keys);
   const promises = edits.map(async ([key, arrayBuffer]) => storage.setRaw(`chunks/${key}`, arrayBuffer));
   await Promise.all(promises);
+  channelConnection.runCode({ script: edits, numArgs: 0 });
   _unlockAll(keys);
 };
 planet.onRemoteSubparcelsEdit = (edits) => {
@@ -589,6 +585,11 @@ const _connectRoom = async roomName => {
       await channelConnection.setMicrophoneMediaStream(mediaStream);
     };
     _latchMediaStream();
+
+    channelConnection.addEventListener('peerEdit', e => {
+      console.log(e)
+      planet.onRemoteSubparcelsEdit(e.data)
+    }, {once: true});
 
     channelConnection.addEventListener('peerEdit', e => {
       console.log(e)
