@@ -339,12 +339,7 @@ planet.writeSubparcels = async edits => {
   _unlockAll(keys);
 };
 planet.onRemoteSubparcelsEdit = (edits) => {
-  // XXX called from the connection when a peer runs an edit
-  let newParcels = [];
-  channelConnection.addEventListener('peerEdit', e => {
-    console.log(e) // list of keys to update
-    newParcels.push(e)
-  }, {once: true});
+  // XXX called from the connection when a peer runs an edit g
   for (const [key, arrayBuffer] of edits) {
     console.log('got edit', key, arrayBuffer);
   }
@@ -594,6 +589,12 @@ const _connectRoom = async roomName => {
       await channelConnection.setMicrophoneMediaStream(mediaStream);
     };
     _latchMediaStream();
+
+    channelConnection.addEventListener('peerEdit', e => {
+      console.log(e)
+      planet.onRemoteSubparcelsEdit(e.data)
+    }, {once: true});
+
   }, {once: true});
   channelConnection.addEventListener('close', e => {
     if (interval) {
