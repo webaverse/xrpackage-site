@@ -589,7 +589,7 @@ const _connectRoom = async roomName => {
     channelConnection.addEventListener('peerEdit', e => {
       console.log(e)
       planet.onRemoteSubparcelsEdit(e.data)
-    }, {once: true});
+    });
 
   }, {once: true});
   channelConnection.addEventListener('close', e => {
