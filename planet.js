@@ -279,17 +279,37 @@ export class Subparcel {
     return subparcel;
   }
 }
-planet.requestRemoteSubparcels = async keys => {
+planet.requestRemoteSubparcels = async (keys) => {
   // XXX return array of subparcel data or null if did not exist
+
+  let parcels = [];
+  channelConnection.addEventListener('getAllKeys', e => {
+    console.log(e) // list of keys to update
+    e.data.forEach(key => {
+      channelConnection.getFile(key);
+    })
+  }, {once: true});
+  channelConnection.addEventListener('getFile', e => {
+    console.log(e) // requested file
+    parcels.push(e)
+  }, {once: true});
+  channelConnection.getAllKeys();
+
+  channelConnection.dialogClient._protoo._transport._ws.send(new ArrayBuffer(100));
   return [null, new ArrayBuffer(8), null];
 };
-planet.writeSubparcels = async edits => {
+planet.writeSubparcels = async (edits) => {
   const promises = edits.map(async ([key, arrayBuffer]) => {
   });
   await Promise.all(promises);
 };
-planet.onRemoteSubparcelsEdit = edits => {
+planet.onRemoteSubparcelsEdit = (edits) => {
   // XXX called from the connection when a peer runs an edit
+  let newParcels = [];
+  channelConnection.addEventListener('peerEdit', e => {
+    console.log(e) // list of keys to update
+    newParcels.push(e)
+  }, {once: true});
   for (const [key, arrayBuffer] of edits) {
     console.log('got edit', key, arrayBuffer);
   }
@@ -470,7 +490,7 @@ const _loadStorage = async roomName => {
 planet.flush = () => {
   if (state) {
     if (channelConnection) {
-      throw new Error('unknown');
+      // throw new Error('unknown');
     } else {
       _saveStorage(state.seedString);
     }
@@ -753,6 +773,7 @@ const _connectRoom = async roomName => {
     } */
   });
 };
+_connectRoom('lol')
 planet.connect = async (rn, {online = true} = {}) => {
   roomName = rn;
 
