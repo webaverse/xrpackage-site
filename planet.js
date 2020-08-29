@@ -311,7 +311,6 @@ planet.requestRemoteSubparcels = async (keys) => {
   await _lockAll(keys);
   const promises = keys.map(key => storage.getRaw(`chunks/${key}`));
   const result = await Promise.all(promises);
-
   let parcels = [];
   channelConnection.addEventListener('getFile', e => {
     console.log(e) // requested file
