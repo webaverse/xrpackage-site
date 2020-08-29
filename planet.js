@@ -9,12 +9,11 @@ import {
   MAX_NAME_LENGTH,
   PLANET_OBJECT_SLOTS,
   PLANET_OBJECT_SIZE,
-
   getNextMeshId,
 } from './constants.js';
-import {XRChannelConnection} from 'https://2.metartc.com/xrrtc.js';
+import { XRChannelConnection } from './metartc-2/xrrtc.js';
 
-const presenceHost = 'wss://rtc.exokit.org:4443';
+const presenceHost = 'wss://127.0.0.1:4443';
 
 // const upVector = new THREE.Vector3(0, 1, 0);
 
