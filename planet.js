@@ -312,12 +312,12 @@ planet.requestRemoteSubparcels = async (keys) => {
   const promises = keys.map(key => storage.getRaw(`chunks/${key}`));
   const result = await Promise.all(promises);
   let parcels = [];
-  channelConnection.addEventListener('getFile', e => {
+  channelConnection.dialogClient.addEventListener('getFile', e => {
     console.log(e) // requested file
-    parcels.push(e)
+    parcels.push(e.data)
     if (parcels.length === keys.length) {
       _unlockAll(keys);
-      channelConnection.removeEventListener('getFile');
+      channelConnection.dialogClient.removeEventListener('getFile');
       return result;
     }
   });
@@ -331,11 +331,11 @@ planet.writeSubparcels = async edits => {
   const promises = edits.map(async ([key, arrayBuffer]) => storage.setRaw(`chunks/${key}`, arrayBuffer));
   await Promise.all(promises);
   let responses = [];
-  channelConnection.addEventListener('edit', e => {
-    responses.push(e)
+  channelConnection.dialogClient.addEventListener('edit', e => {
+    responses.push(e.data)
     if (responses.length === edits.length) {
       _unlockAll(keys);
-      channelConnection.removeEventListener('edit');
+      channelConnection.dialogClient.removeEventListener('edit');
     }
   });
   edits.forEach(edit => {
@@ -594,7 +594,7 @@ const _connectRoom = async roomName => {
     };
     _latchMediaStream();
 
-    channelConnection.addEventListener('peerEdit', e => {
+    channelConnection.dialogClient.addEventListener('peerEdit', e => {
       console.log(e)
       planet.onRemoteSubparcelsEdit(e.data)
     });
