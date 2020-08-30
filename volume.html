@@ -32,6 +32,8 @@
 
   <script type=module>
     import {volumizeWbn, parseQuery, toggleElements} from './bakeUtils.js';
+    import {XRPackageEngine} from 'https://static.xrpackage.org/xrpackage.js';
+    window.XRPackageEngine = XRPackageEngine;
 
     (async () => {
       const {srcWbn, dstVolume, dstAabb} = parseQuery(decodeURIComponent(window.location.search));

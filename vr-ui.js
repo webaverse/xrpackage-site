@@ -1,6 +1,7 @@
-import * as THREE from 'https://static.xrpackage.org/xrpackage/three.module.js';
 import {XRPackage} from './run.js';
 import {TextMesh} from './textmesh-standalone.esm.js'
+
+const THREE = window.THREE;
 
 const apiHost = 'https://ipfs.exokit.org/ipfs';
 

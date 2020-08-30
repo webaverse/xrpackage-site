@@ -70,13 +70,19 @@
 </header>
   <script type=module>
 import THREE from 'https://static.xrpackage.org/xrpackage/three.module.js';
-window.THREE = THREE;
 import {screenshotObject, exportObject} from './screenshot-object.js';
 import {XRPackage} from 'https://static.xrpackage.org/xrpackage.js';
-import {bindUploadFileButton} from 'https://static.xrpackage.org/xrpackage/util.js';
+import {bindUploadFileButton} from './utils.js';
 import {contractManager, getContract} from 'https://static.xrpackage.org/wallet.js';
 import address from 'https://contracts.webaverse.com/address.js';
 import abi from 'https://contracts.webaverse.com/abi.js';
+
+window.THREE = THREE;
+window.XRPackage = XRPackage;
+window.contractManager = contractManager;
+window.getContract = getContract;
+window.contractAddress = address;
+window.contractAbi = abi;
 
 const apiHost = `https://ipfs.exokit.org/ipfs`;
 const network = 'rinkeby';

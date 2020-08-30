@@ -1,18 +1,18 @@
 /* eslint-disable no-inner-declarations */
 /* global Web3 */
 
-import THREE from 'https://static.xrpackage.org/xrpackage/three.module.js';
 import './selector.js';
-import {XRPackage, XRPackageEngine} from 'https://static.xrpackage.org/xrpackage.js';
-import {downloadFile, readFile, bindUploadFileButton} from 'https://static.xrpackage.org/xrpackage/util.js';
-import {OrbitControls} from 'https://static.xrpackage.org/xrpackage/OrbitControls.js';
+import {downloadFile, readFile, bindUploadFileButton} from './utils.js';
 import {tryLogin} from './login.js';
 import {getWireframeMesh} from './volume.js';
 import {progress} from './progress.js';
-import address from 'https://contracts.webaverse.com/address.js';
-import abi from 'https://contracts.webaverse.com/abi.js';
 
-window.THREE = THREE;
+const THREE = window.THREE;
+const XRPackage = window.XRPackage;
+const XRPackageEngine = window.XRPackageEngine;
+const OrbitControls = window.OrbitControls;
+const address = window.contractAddress;
+const abi = window.contractAbi;
 
 const apiHost = 'https://ipfs.exokit.org/ipfs';
 const packagesEndpoint = 'https://packages.exokit.org';

@@ -1,5 +1,4 @@
-import THREE from 'https://static.xrpackage.org/xrpackage/three.module.js';
-
+const THREE = window.THREE;
 let renderer = null;
 let camera = null;
 const screenshot = (scene, cameraPosition, cameraTarget, options = {}) => {

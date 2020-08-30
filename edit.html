@@ -283,8 +283,17 @@
       <div class=description>Set package as avatar</div>
     </div>
   </aside>
-<script type=module src=run.js></script>
-<script type=module src=edit.js></script>
+  <script type=module>
+    import { XRPackage, XRPackageEngine } from 'https://static.xrpackage.org/xrpackage.js';
+    import { BufferGeometryUtils } from 'https://static.xrpackage.org/BufferGeometryUtils.js'
+    import * as THREE from 'https://static.xrpackage.org/xrpackage/three.module.js';
+    window.XRPackage = XRPackage;
+    window.XRPackageEngine = XRPackageEngine;
+    window.BufferGeometryUtils = BufferGeometryUtils;
+    window.THREE = THREE;
+  </script>
+  <script type=module src=run.js></script>
+  <script type=module src=edit.js></script>
 </body>
 
 </html>
