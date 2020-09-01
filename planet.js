@@ -543,8 +543,11 @@ const _connectRoom = async roomName => {
     roomName,
     // displayName: 'user',
   });
+
   channelConnection.addEventListener('open', async e => {
     channelConnectionOpen = true;
+
+    console.log('IM OPEN BOIS')
 
     const queue = [];
     let index = 0;
@@ -608,6 +611,8 @@ const _connectRoom = async roomName => {
   }, {once: true});
   channelConnection.addEventListener('peerconnection', async e => {
     const peerConnection = e.data;
+
+    console.log(peerConnection, 'YOLOYOYOYOYOYO')
 
     let modelHash = null;
     let playerRig = null;
@@ -706,7 +711,6 @@ const _connectRoom = async roomName => {
             remoteRig.leftHand.quaternion.fromArray(leftGamepad[1]);
             remoteRig.rightHand.position.fromArray(rightGamepad[0]);
             remoteRig.rightHand.quaternion.fromArray(rightGamepad[1]); */
-
             playerRig.setPose(pose);
             playerRig.textMesh.position.fromArray(head[0]);
             playerRig.textMesh.position.y += 0.5;
@@ -752,6 +756,7 @@ const _connectRoom = async roomName => {
       }
     });
     peerConnections.push(peerConnection);
+    console.log(peerConnections)
 
     let interval;
     if (live) {
