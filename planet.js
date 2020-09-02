@@ -12,6 +12,7 @@ import {
   getNextMeshId,
 } from './constants.js';
 import { XRChannelConnection } from './node_modules/xr-rtc-channel/xrrtc.js';
+import { XRPackage } from 'https://static.xrpackage.org/xrpackage.js';
 
 const presenceHost = 'wss://127.0.0.1:4443';
 
@@ -622,6 +623,8 @@ const _connectRoom = async roomName => {
     const _loadAvatar = async hash => {
       if (!loading) {
         loading = true;
+
+        const xrpackage = new XRPackage();
 
         if (playerRig) {
           await xrpackage.remove(playerRig);
