@@ -657,8 +657,9 @@ const _connectRoom = async roomName => {
         p.scaler = scaler;
         if (live) {
           playerRig = p;
-          playerRig.textMesh = _makeTextMesh('Loading...');
-          scene.add(playerRig.textMesh);
+          console.log(playerRig)
+          // playerRig.textMesh = _makeTextMesh('Loading...');
+          // xrpackage.engine.scene.add(playerRig.textMesh);
           if (microphoneMediaStream) {
             p.context.rig.setMicrophoneMediaStream(microphoneMediaStream);
           }
@@ -748,7 +749,7 @@ const _connectRoom = async roomName => {
       microphoneMediaStream = new MediaStream([track]);
       const audio = document.createElement('audio');
       audio.srcObject = microphoneMediaStream;
-      audio.play();
+      // audio.play();
       if (playerRig) {
         playerRig.context.rig.setMicrophoneMediaStream(microphoneMediaStream);
         track.addEventListener('ended', e => {
