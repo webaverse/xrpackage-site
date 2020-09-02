@@ -547,8 +547,6 @@ const _connectRoom = async roomName => {
   channelConnection.addEventListener('open', async e => {
     channelConnectionOpen = true;
 
-    console.log('IM OPEN BOIS')
-
     const queue = [];
     let index = 0;
     let bufferedAmountLow = true;
@@ -611,8 +609,6 @@ const _connectRoom = async roomName => {
   }, {once: true});
   channelConnection.addEventListener('peerconnection', async e => {
     const peerConnection = e.data;
-
-    console.log(peerConnection, 'YOLOYOYOYOYOYO')
 
     let modelHash = null;
     let playerRig = null;
@@ -756,7 +752,6 @@ const _connectRoom = async roomName => {
       }
     });
     peerConnections.push(peerConnection);
-    console.log(peerConnections)
 
     let interval;
     if (live) {
@@ -783,6 +778,10 @@ const _connectRoom = async roomName => {
       }));
     }, 1000);
   }); */
+
+  // setInterval(() => {
+  //   console.log(channelConnection);
+  // }, 5000);
 
   channelConnection.addEventListener('initState', async e => {
     const {data} = e;
