@@ -12,7 +12,7 @@ import {
   getNextMeshId,
 } from './constants.js';
 import { XRChannelConnection } from './node_modules/xr-rtc-channel/xrrtc.js';
-import { XRPackage } from 'https://static.xrpackage.org/xrpackage.js';
+import { XRPackage, XRPackageEngine } from 'https://static.xrpackage.org/xrpackage.js';
 
 const presenceHost = 'wss://127.0.0.1:4443';
 
@@ -624,7 +624,10 @@ const _connectRoom = async roomName => {
       if (!loading) {
         loading = true;
 
-        const xrpackage = new XRPackage();
+        let xrpackage = new XRPackage();
+        xrpackage.engine = new XRPackageEngine();
+
+        console.log(xrpackage)
 
         if (playerRig) {
           await xrpackage.remove(playerRig);
@@ -756,21 +759,21 @@ const _connectRoom = async roomName => {
     });
     peerConnections.push(peerConnection);
 
-    let interval;
-    if (live) {
-      interval = setInterval(() => {
-        channelConnection.send(JSON.stringify({
-          method: 'name',
-          peerId: channelConnection.connectionId,
-          name: _getUsername(),
-        }));
-        channelConnection.send(JSON.stringify({
-          method: 'avatar',
-          peerId: channelConnection.connectionId,
-          hash: _getAvatar(),
-        }));
-      }, 1000);
-    }
+  //   let interval;
+  //   if (live) {
+  //     interval = setInterval(() => {
+  //       channelConnection.send(JSON.stringify({
+  //         method: 'name',
+  //         peerId: channelConnection.connectionId,
+  //         name: _getUsername(),
+  //       }));
+  //       channelConnection.send(JSON.stringify({
+  //         method: 'avatar',
+  //         peerId: channelConnection.connectionId,
+  //         hash: _getAvatar(),
+  //       }));
+  //     }, 1000);
+  //   }
   });
   /* channelConnection.addEventListener('botconnection', async e => {
     console.log('got bot connection', e.data);
