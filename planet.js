@@ -11,7 +11,7 @@ import {
   PLANET_OBJECT_SIZE,
   getNextMeshId,
 } from './constants.js';
-import { XRChannelConnection } from './metartc-2/xrrtc.js';
+import { XRChannelConnection } from './node_modules/xr-rtc-channel/xrrtc.js';
 
 const presenceHost = 'wss://127.0.0.1:4443';
 
