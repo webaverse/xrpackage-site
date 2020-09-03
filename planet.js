@@ -13,6 +13,8 @@ import {
 } from './constants.js';
 import { XRChannelConnection } from './node_modules/xr-rtc-channel/xrrtc.js';
 import { XRPackage, XRPackageEngine } from 'https://static.xrpackage.org/xrpackage.js';
+import { makeTextMesh } from './vr-ui.js';
+import { loginManager } from './login.js'
 
 const presenceHost = 'wss://127.0.0.1:4443';
 
@@ -646,6 +648,7 @@ const _connectRoom = async roomName => {
             return new XRPackage();
           }
         })();
+        console.log('p', p)
         await p.waitForLoad();
         await p.loadAvatar();
         p.isAvatar = true;
@@ -658,8 +661,8 @@ const _connectRoom = async roomName => {
         if (live) {
           playerRig = p;
           console.log(playerRig)
-          // playerRig.textMesh = _makeTextMesh('Loading...');
-          // xrpackage.engine.scene.add(playerRig.textMesh);
+          playerRig.textMesh = makeTextMesh('Loading...');
+          xrpackage.engine.scene.add(playerRig.textMesh);
           if (microphoneMediaStream) {
             p.context.rig.setMicrophoneMediaStream(microphoneMediaStream);
           }
@@ -680,11 +683,11 @@ const _connectRoom = async roomName => {
       }
     };
     _loadAvatar(null);
-    
-    /* const remoteRig = _makeRig();
-    _addRig(remoteRig); */
+
+    console.log(peerConnection)
 
     peerConnection.getPlayerRig = () => playerRig;
+    console.log(playerRig)
     peerConnection.addEventListener('close', async () => {
       peerConnections.splice(peerConnections.indexOf(peerConnection), 1);
       if (playerRig) {
@@ -700,6 +703,7 @@ const _connectRoom = async roomName => {
     });
     peerConnection.addEventListener('message', e => {
       const {data} = e;
+      console.log(e)
       if (typeof data === 'string') {
         const j = JSON.parse(data);
         const {method} = j;
@@ -708,12 +712,12 @@ const _connectRoom = async roomName => {
             const {pose} = j;
             const [head, leftGamepad, rightGamepad] = pose;
             
-            /* remoteRig.head.position.fromArray(head[0]);
-            remoteRig.head.quaternion.fromArray(head[1]);
-            remoteRig.leftHand.position.fromArray(leftGamepad[0]);
-            remoteRig.leftHand.quaternion.fromArray(leftGamepad[1]);
-            remoteRig.rightHand.position.fromArray(rightGamepad[0]);
-            remoteRig.rightHand.quaternion.fromArray(rightGamepad[1]); */
+            // playerRig.head.position.fromArray(head[0]);
+            // remoteRig.head.quaternion.fromArray(head[1]);
+            // remoteRig.leftHand.position.fromArray(leftGamepad[0]);
+            // remoteRig.leftHand.quaternion.fromArray(leftGamepad[1]);
+            // remoteRig.rightHand.position.fromArray(rightGamepad[0]);
+            // remoteRig.rightHand.quaternion.fromArray(rightGamepad[1]);
             playerRig.setPose(pose);
             playerRig.textMesh.position.fromArray(head[0]);
             playerRig.textMesh.position.y += 0.5;
@@ -760,21 +764,21 @@ const _connectRoom = async roomName => {
     });
     peerConnections.push(peerConnection);
 
-  //   let interval;
-  //   if (live) {
-  //     interval = setInterval(() => {
-  //       channelConnection.send(JSON.stringify({
-  //         method: 'name',
-  //         peerId: channelConnection.connectionId,
-  //         name: _getUsername(),
-  //       }));
-  //       channelConnection.send(JSON.stringify({
-  //         method: 'avatar',
-  //         peerId: channelConnection.connectionId,
-  //         hash: _getAvatar(),
-  //       }));
-  //     }, 1000);
-  //   }
+    let interval;
+    if (live) {
+      interval = setInterval(() => {
+        channelConnection.send(JSON.stringify({
+          method: 'name',
+          peerId: channelConnection.connectionId,
+          name: loginManager.getUsername(),
+        }));
+        channelConnection.send(JSON.stringify({
+          method: 'avatar',
+          peerId: channelConnection.connectionId,
+          hash: loginManager.getAvatar(),
+        }));
+      }, 1000);
+    }
   });
   /* channelConnection.addEventListener('botconnection', async e => {
     console.log('got bot connection', e.data);
