@@ -6352,13 +6352,13 @@ const _packageremove = e => {
 };
 let currentWorldChanged = false;
 const _updateWorldSaveButton = () => {
-  if (currentWorldChanged && currentWorldId) {
-    worldSaveButton.classList.remove('hidden');
-    worldRevertButton.classList.remove('hidden');
-  } else {
-    worldSaveButton.classList.add('hidden');
-    worldRevertButton.classList.add('hidden');
-  }
+  // if (currentWorldChanged && currentWorldId) {
+  //   worldSaveButton.classList.remove('hidden');
+  //   worldRevertButton.classList.remove('hidden');
+  // } else {
+  //   worldSaveButton.classList.add('hidden');
+  //   worldRevertButton.classList.add('hidden');
+  // }
 };
 function _matrixUpdate(e) {
   const p = this;

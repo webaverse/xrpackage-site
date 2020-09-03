@@ -15,6 +15,7 @@ import { XRChannelConnection } from './node_modules/xr-rtc-channel/xrrtc.js';
 import { XRPackage, XRPackageEngine } from 'https://static.xrpackage.org/xrpackage.js';
 import { makeTextMesh } from './vr-ui.js';
 import { loginManager } from './login.js'
+import { pe } from './run.js'
 
 const presenceHost = 'wss://127.0.0.1:4443';
 
@@ -626,15 +627,14 @@ const _connectRoom = async roomName => {
       if (!loading) {
         loading = true;
 
-        let xrpackage = new XRPackage();
-        xrpackage.engine = new XRPackageEngine();
+
 
         if (playerRig) {
-          await xrpackage.remove(playerRig);
+          await pe.remove(playerRig);
           scene.remove(playerRig.textMesh);
           playerRig = null;
         }
-
+        console.log(window)
         const p = await (async () => {
           if (hash) {
             const u = `https://ipfs.exokit.org/ipfs/${hash}.wbn`;
@@ -650,21 +650,21 @@ const _connectRoom = async roomName => {
         await p.waitForLoad();
         await p.loadAvatar();
         p.isAvatar = true;
-        await xrpackage.add(p);
+        await pe.add(p);
         const scaler = new THREE.Object3D();
         // scaler.scale.set(10, 10, 10);
         scaler.add(p.context.object);
-        xrpackage.engine.scene.add(scaler);
+        pe.scene.add(scaler);
         p.scaler = scaler;
         if (live) {
           playerRig = p;
           playerRig.textMesh = makeTextMesh('Loading...');
-          xrpackage.engine.scene.add(playerRig.textMesh);
+          pe.scene.add(playerRig.textMesh);
           if (microphoneMediaStream) {
             p.context.rig.setMicrophoneMediaStream(microphoneMediaStream);
           }
         } else {
-          await xrpackage.remove(p);
+          await pe.remove(p);
         }
 
         loading = false;
@@ -695,6 +695,8 @@ const _connectRoom = async roomName => {
       _removeRig(remoteRig);
       live = false;
     });
+    const localEuler = new THREE.Euler();
+
     peerConnection.addEventListener('message', e => {
       const {data} = e;
       if (typeof data === 'string') {
@@ -712,14 +714,17 @@ const _connectRoom = async roomName => {
             playerRig.context.rig.inputs.rightGamepad.position.fromArray(rightGamepad[0]);
             playerRig.context.rig.inputs.rightGamepad.quaternion.fromArray(rightGamepad[1]);
             playerRig.setPose(pose);
-            // playerRig.textMesh.position.fromArray(head[0]);
-            // playerRig.textMesh.position.y += 0.5;
-            // playerRig.textMesh.quaternion.fromArray(head[1]);
-            // localEuler.setFromQuaternion(playerRig.textMesh.quaternion, 'YXZ');
-            // localEuler.x = 0;
-            // localEuler.y += Math.PI;
-            // localEuler.z = 0;
-            // playerRig.textMesh.quaternion.setFromEuler(localEuler);
+            playerRig.textMesh.position.fromArray(head[0]);
+            playerRig.textMesh.position.y += 0.5;
+            playerRig.textMesh.quaternion.fromArray(head[1]);
+    
+            localEuler.setFromQuaternion(playerRig.textMesh.quaternion, 'YXZ');
+            localEuler.x = 0;
+            localEuler.y += Math.PI;
+            localEuler.z = 0;
+            playerRig.textMesh.quaternion.setFromEuler(localEuler);
+
+            console.log(playerRig)
           }
         } else if (method === 'name') {
           const {peerId, name} = j;
@@ -731,7 +736,6 @@ const _connectRoom = async roomName => {
           const {peerId, hash} = j;
           if (peerId === peerConnection.connectionId && hash !== modelHash) {
             modelHash = hash;
-            _loadAvatar(hash);
           }
         } else {
           console.warn('unknown method', method);
