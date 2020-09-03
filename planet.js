@@ -764,9 +764,12 @@ const _connectRoom = async roomName => {
     });
     peerConnections.push(peerConnection);
 
+    console.log(playerRig)
+
     let interval;
     if (live) {
       interval = setInterval(() => {
+        console.log(playerRig)
         channelConnection.send(JSON.stringify({
           method: 'name',
           peerId: channelConnection.connectionId,
@@ -777,9 +780,17 @@ const _connectRoom = async roomName => {
           peerId: channelConnection.connectionId,
           hash: loginManager.getAvatar(),
         }));
+        peerConnections.forEach(peer => {
+          peer.channelConnection.send(JSON.stringify({
+            method: 'pose',
+            peerId: channelConnection.connectionId,
+            pose: playerRig.pose,
+          }))
+        })
       }, 1000);
     }
   });
+
   /* channelConnection.addEventListener('botconnection', async e => {
     console.log('got bot connection', e.data);
 
