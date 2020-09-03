@@ -824,10 +824,9 @@ const _connectRoom = async roomName => {
     } */
   });
 };
-_connectRoom('lol')
+
 planet.connect = async (rn, {online = true} = {}) => {
   roomName = rn;
-
   if (online) {
     await _connectRoom(roomName);
   } else {
@@ -840,3 +839,5 @@ planet.connect = async (rn, {online = true} = {}) => {
   const s = _deserializeState(b);
   return s;
 }; */
+
+planet.connect('lol')
