@@ -5,9 +5,6 @@ import {BufferGeometryUtils} from 'https://static.xrpackage.org/BufferGeometryUt
 import {GLTFLoader} from './GLTFLoader.module.js';
 import {BasisTextureLoader} from './BasisTextureLoader.js';
 import {TransformControls} from './TransformControls.js';
-// import CapsuleGeometry from './CapsuleGeometry.js';
-// import address from 'https://contracts.webaverse.com/address.js';
-// import abi from 'https://contracts.webaverse.com/abi.js';
 import {XRPackage, pe, renderer, scene, camera, parcelMaterial, floorMesh, proxySession, getRealSession, loginManager} from './run.js';
 import {downloadFile, readFile, bindUploadFileButton} from 'https://static.xrpackage.org/xrpackage/util.js';
 // import {wireframeMaterial, getWireframeMesh, meshIdToArray, decorateRaycastMesh, VolumeRaycaster} from './volume.js';
@@ -26,12 +23,6 @@ import {
   numSlices,
   slabRadius,
 
-  /* slabTotalSize,
-  slabNumAttributes,
-  slabAttributeSize,
-  slabSliceTris,
-  slabSliceVertices, */
-
   chunkDistance,
   BUILD_SNAP,
   PLANET_OBJECT_SLOTS,
@@ -44,7 +35,6 @@ import easing from './easing.js';
 import {planet} from './planet.js';
 import {player} from './player.js';
 import {Bot} from './bot.js';
-// import './atlaspack.js';
 import {Sky} from './Sky.js';
 import {GuardianMesh} from './land.js';
 
@@ -81,12 +71,12 @@ const cubicBezier = easing(0, 1, 0, 1);
 let skybox = null;
 let skybox2 = null;
 
-const _loadGltf = u => new Promise((accept, reject) => {
+/* const _loadGltf = u => new Promise((accept, reject) => {
   new GLTFLoader().load(u, o => {
     o = o.scene;
     accept(o);
   }, xhr => {}, reject);
-});
+}); */
 const _getStringLength = (uint8Array, offset) => {
   let i;
   for (i = 0; i < uint8Array.length; i++, offset++) {
@@ -649,7 +639,7 @@ let thingAllocators = null;
 let thingBufferAttributes = null;
 // let culler = null;
 let makeAnimal = null;
-let chunkMeshes = [];
+// let chunkMeshes = [];
 let chunkMesh = null;
 const worldContainer = new THREE.Object3D();
 scene.add(worldContainer);
@@ -660,19 +650,7 @@ const currentChunkMeshId = getNextMeshId();
 // let capsuleMesh = null;
 let currentVegetationMesh = null;
 let currentThingMesh = null;
-const _getCurrentChunkMesh = () => currentChunkMesh;
-const _setCurrentChunkMesh = chunkMesh => {
-  /* if (currentChunkMesh) {
-    currentChunkMesh.material[0].uniforms.isCurrent.value = 0;
-    currentChunkMesh.material[0].uniforms.isCurrent.needsUpdate = true;
-    currentChunkMesh = null;
-  } */
-  currentChunkMesh = chunkMesh;
-  /* if (currentChunkMesh) {
-    currentChunkMesh.material[0].uniforms.isCurrent.value = 1;
-    currentChunkMesh.material[0].uniforms.isCurrent.needsUpdate = true;
-  } */
-};
+let meshDrawer = null;
 let stairsMesh = null;
 let platformMesh = null;
 let wallMesh = null;
@@ -976,7 +954,7 @@ const geometryWorker = (() => {
   const cbIndex = new Map();
   const textEncoder = new TextEncoder();
   const w = {};
-  window.earcut = () => {
+  /* window.earcut = () => {
     const positionsData = Float32Array.from([
       0, 0, 0, 100, 100, 100, 100, 0,
     ]);
@@ -1022,7 +1000,7 @@ const geometryWorker = (() => {
     zs.set(zData);
 
     meshDrawer.drawPolygonize(positions, holes, holeCounts, points, 0.5, zs);
-  };
+  }; */
   w.waitForLoad = () => modulePromise;
   w.alloc = (constructor, count) => {
     if (count > 0) {
@@ -1041,27 +1019,6 @@ const geometryWorker = (() => {
     const offset = moduleInstance.HEAP32[ptr/Uint32Array.BYTES_PER_ELEMENT];
     return {
       ptr,
-      // offset,
-      /* alloc(constructor, count) {
-        if (count > 0) {
-          const size = count * constructor.BYTES_PER_ELEMENT;
-          const freeEntryPtr = moduleInstance._arenaAlloc(ptr, size);
-          if (freeEntryPtr) {
-            const start = moduleInstance.HEAP32[freeEntryPtr/Uint32Array.BYTES_PER_ELEMENT];
-            const freeEntry = new constructor(moduleInstance.HEAP8.buffer, start, count);
-            freeEntry.ptr = freeEntryPtr;
-            freeEntry.offset = start;
-            return freeEntry;
-          } else {
-            throw new Error('arena out of memory');
-          }
-        } else {
-          return new constructor(moduleInstance.HEAP8.buffer, 0, 0);
-        }
-      }, */
-      /* free(freeEntryPtr) {
-        moduleInstance._arenaFree(ptr, freeEntryPtr);
-      }, */
       getAs(constructor) {
         return new constructor(moduleInstance.HEAP8.buffer, offset, size/constructor.BYTES_PER_ELEMENT);
       },
@@ -1387,8 +1344,7 @@ const geometryWorker = (() => {
   w.makeTracker = function() {
     return moduleInstance._makeTracker.apply(moduleInstance, arguments);
   };
-  // w.makeCuller = () => moduleInstance._makeCuller();
-  w.requestBakeGeometry = (positions, indices) => new Promise((accept, reject) => {
+  /* w.requestBakeGeometry = (positions, indices) => new Promise((accept, reject) => {
     callStack.allocRequest(METHODS.bakeGeometry, 5, false, offset => {
       callStack.u32[offset] = positions.byteOffset;
       callStack.u32[offset + 1] = indices ? indices.byteOffset : 0;
@@ -1452,7 +1408,7 @@ const geometryWorker = (() => {
   };
   w.unregisterGeometry = ptr => {
     moduleInstance._unregisterGeometry(ptr);
-  };
+  }; */
   w.raycast = (tracker, p, q) => {
     p.toArray(scratchStack.f32, 0);
     localVector.set(0, 0, -1)
@@ -1472,10 +1428,9 @@ const geometryWorker = (() => {
     const normalOffset = scratchStack.f32.byteOffset + 17*Float32Array.BYTES_PER_ELEMENT;
     const distanceOffset = scratchStack.f32.byteOffset + 20*Float32Array.BYTES_PER_ELEMENT;
     const objectIdOffset = scratchStack.u32.byteOffset + 21*Float32Array.BYTES_PER_ELEMENT;
-    const positionOffset = scratchStack.u32.byteOffset + 22*Float32Array.BYTES_PER_ELEMENT;
-    const quaternionOffset = scratchStack.u32.byteOffset + 25*Float32Array.BYTES_PER_ELEMENT;
-    // const objectOffset = scratchStack.f32.byteOffset + 21*Float32Array.BYTES_PER_ELEMENT;
-    // const faceIndexOffset = scratchStack.f32.byteOffset + 22*Float32Array.BYTES_PER_ELEMENT;
+    const faceIndexOffset = scratchStack.u32.byteOffset + 22*Float32Array.BYTES_PER_ELEMENT;
+    const positionOffset = scratchStack.u32.byteOffset + 23*Float32Array.BYTES_PER_ELEMENT;
+    const quaternionOffset = scratchStack.u32.byteOffset + 26*Float32Array.BYTES_PER_ELEMENT;
 
     /* const raycastArgs = {
       origin: allocator.alloc(Float32Array, 3),
@@ -1501,21 +1456,22 @@ const geometryWorker = (() => {
       normalOffset,
       distanceOffset,
       objectIdOffset,
+      faceIndexOffset,
       positionOffset,
       quaternionOffset,
-      // faceIndexOffset
     );
     const objectId = scratchStack.u32[21];
-    const objectPosition = scratchStack.f32.slice(22, 25);
-    const objectQuaternion = scratchStack.f32.slice(25, 29);
+    const faceIndex = scratchStack.u32[22];
+    const objectPosition = scratchStack.f32.slice(23, 26);
+    const objectQuaternion = scratchStack.f32.slice(26, 30);
 
     return scratchStack.u32[13] ? {
       point: scratchStack.f32.slice(14, 17),
       normal: scratchStack.f32.slice(17, 20),
       distance: scratchStack.f32[20],
       meshId: scratchStack.u32[21],
-      // faceIndex: scratchStack.u32[22],
       objectId,
+      faceIndex,
       objectPosition,
       objectQuaternion,
     } : null;
@@ -1567,7 +1523,7 @@ const geometryWorker = (() => {
       grounded: !!scratchStack.u32[18],
     } : null;
   };
-  w.registerGroupSet = (culler, x, y, z, r, peeksData, groupsData) => {
+  /* w.registerGroupSet = (culler, x, y, z, r, peeksData, groupsData) => {
     scratchStack.u8.set(peeksData, 0);
     for (let i = 0; i < groupsData.length; i++) {
       const groupData = groupsData[i];
@@ -1621,7 +1577,7 @@ const geometryWorker = (() => {
       };
     }
     return cullResults;
-  };
+  }; */
   w.tickCull = (tracker, position, matrix) => {
     position.toArray(scratchStack.f32, 0);
     matrix.toArray(scratchStack.f32, 3);
@@ -1797,7 +1753,6 @@ const geometryWorker = (() => {
       callStack.u32[offset + 5] = objectId;
     }, offset => {
       const numSubparcels = callStack.ou32[offset++];
-      // console.log('num subparcels add', numSubparcels);
       for (let i = 0; i < numSubparcels; i++) {
         const positionsFreeEntry = callStack.ou32[offset++];
         const uvsFreeEntry = callStack.ou32[offset++];
@@ -2051,7 +2006,7 @@ const geometryWorker = (() => {
       });
     });
   });
-  w.requestAddThingGeometry = (tracker, geometrySet, name, positions, uvs, indices, numPositions, numUvs, numIndices, texture) => new Promise((accept, reject) => {
+  w.requestAddThingGeometry = (tracker, geometrySet, name, positions, uvs, indices, numPositions, numUvs, numIndices, texture, trianglePhysicsGeometry) => new Promise((accept, reject) => {
     callStack.allocRequest(METHODS.addThingGeometry, 128, true, offset => {
       callStack.u32[offset] = tracker;
       callStack.u32[offset + 1] = geometrySet;
@@ -2069,6 +2024,8 @@ const geometryWorker = (() => {
       callStack.u32[offset + 2 + MAX_NAME_LENGTH/Uint32Array.BYTES_PER_ELEMENT + 5] = numIndices;
 
       callStack.u32[offset + 2 + MAX_NAME_LENGTH/Uint32Array.BYTES_PER_ELEMENT + 6] = texture;
+
+      callStack.u32[offset + 2 + MAX_NAME_LENGTH/Uint32Array.BYTES_PER_ELEMENT + 7] = trianglePhysicsGeometry;
     }, offset => {
       accept();
     });
@@ -2087,8 +2044,6 @@ const geometryWorker = (() => {
       scale.toArray(callStack.f32, offset + (2*Uint32Array.BYTES_PER_ELEMENT + MAX_NAME_LENGTH + 7*Float32Array.BYTES_PER_ELEMENT)/Float32Array.BYTES_PER_ELEMENT);
     }, offset => {
       const numSubparcels = callStack.ou32[offset++];
-      // console.log('got callback', offset, numSubparcels);
-      // console.log('num subparcels add', numSubparcels);
       for (let i = 0; i < numSubparcels; i++) {
         const positionsFreeEntry = callStack.ou32[offset++];
         const uvsFreeEntry = callStack.ou32[offset++];
@@ -2170,21 +2125,24 @@ const geometryWorker = (() => {
       });
     });
   });
-  w.convexHull = (positionsData, numPositions, cameraPosition) => {
-    const positions = w.alloc(Float32Array, numPositions);
-    positions.set(positionsData.subarray(0, numPositions));
+  w.convexHull = (positionsData, cameraPosition) => {
+    const positions = geometryWorker.alloc(Float32Array, positionsData.length);
+    positions.set(positionsData);
+
     cameraPosition.toArray(scratchStack.f32, 0);
     const convexHullResult = moduleInstance._convexHull(positions.byteOffset, positions.length, scratchStack.f32.byteOffset);
-    w.free(positions.byteOffset);
 
     const pointsOffset = moduleInstance.HEAPU32[convexHullResult/Uint32Array.BYTES_PER_ELEMENT];
     const numPoints = moduleInstance.HEAPU32[convexHullResult/Uint32Array.BYTES_PER_ELEMENT + 1];
-    const points = moduleInstance.HEAPF32.subarray(pointsOffset/Float32Array.BYTES_PER_ELEMENT, pointsOffset/Float32Array.BYTES_PER_ELEMENT + numPoints);
+    const points = moduleInstance.HEAPF32.slice(pointsOffset/Float32Array.BYTES_PER_ELEMENT, pointsOffset/Float32Array.BYTES_PER_ELEMENT + numPoints);
     const planeNormal = new THREE.Vector3().fromArray(moduleInstance.HEAPF32, convexHullResult/Float32Array.BYTES_PER_ELEMENT + 2);
     const planeConstant = moduleInstance.HEAPF32[convexHullResult/Uint32Array.BYTES_PER_ELEMENT + 5];
     const center = new THREE.Vector3().fromArray(moduleInstance.HEAPF32, convexHullResult/Float32Array.BYTES_PER_ELEMENT + 6);
     const tang = new THREE.Vector3().fromArray(moduleInstance.HEAPF32, convexHullResult/Float32Array.BYTES_PER_ELEMENT + 9);
     const bitang = new THREE.Vector3().fromArray(moduleInstance.HEAPF32, convexHullResult/Float32Array.BYTES_PER_ELEMENT + 12);
+
+    w.free(positions.byteOffset);
+    moduleInstance._deleteConvexHullResult(convexHullResult);
 
     return {
       points,
@@ -2195,32 +2153,54 @@ const geometryWorker = (() => {
       bitang,
     };
   };
-  w.earcut = function() {
-    // XXX GC this
-    const result = moduleInstance._earcut.apply(moduleInstance, arguments);
+  w.earcut = (tracker, ps, holes, holeCounts, points, z, zs, objectId, position, quaternion) => {
+    const inPs = w.alloc(Float32Array, ps.length);
+    inPs.set(ps);
+    const inHoles = w.alloc(Float32Array, holes.length);
+    inHoles.set(holes);
+    const inHoleCounts = w.alloc(Uint32Array, holeCounts.length);
+    inHoleCounts.set(holeCounts);
+    const inPoints = w.alloc(Float32Array, points.length);
+    inPoints.set(points);
+    const inZs = w.alloc(Float32Array, zs.length);
+    inZs.set(zs);
+    position.toArray(scratchStack.f32, 0);
+    const positionOffset = scratchStack.f32.byteOffset;
+    quaternion.toArray(scratchStack.f32, 3);
+    const quaternionOffset = scratchStack.f32.byteOffset + 3*Float32Array.BYTES_PER_ELEMENT;
+    const resultOffset = moduleInstance._earcut(tracker, inPs.byteOffset, inPs.length/2, inHoles.byteOffset, inHoleCounts.byteOffset, inHoleCounts.length, inPoints.byteOffset, inPoints.length, z, inZs.byteOffset, objectId, positionOffset, quaternionOffset);
 
-    const outPositionsOffset = moduleInstance.HEAPU32[result/Uint32Array.BYTES_PER_ELEMENT];
-    const outNumPositions = moduleInstance.HEAPU32[result/Uint32Array.BYTES_PER_ELEMENT + 1];
-    const outUvsOffset = moduleInstance.HEAPU32[result/Uint32Array.BYTES_PER_ELEMENT + 2];
-    const outNumUvs = moduleInstance.HEAPU32[result/Uint32Array.BYTES_PER_ELEMENT + 3];
-    const outIndicesOffset = moduleInstance.HEAPU32[result/Uint32Array.BYTES_PER_ELEMENT + 4];
-    const outNumIndices = moduleInstance.HEAPU32[result/Uint32Array.BYTES_PER_ELEMENT + 5];
+    const outPositionsOffset = moduleInstance.HEAPU32[resultOffset/Uint32Array.BYTES_PER_ELEMENT];
+    const outNumPositions = moduleInstance.HEAPU32[resultOffset/Uint32Array.BYTES_PER_ELEMENT + 1];
+    const outUvsOffset = moduleInstance.HEAPU32[resultOffset/Uint32Array.BYTES_PER_ELEMENT + 2];
+    const outNumUvs = moduleInstance.HEAPU32[resultOffset/Uint32Array.BYTES_PER_ELEMENT + 3];
+    const outIndicesOffset = moduleInstance.HEAPU32[resultOffset/Uint32Array.BYTES_PER_ELEMENT + 4];
+    const outNumIndices = moduleInstance.HEAPU32[resultOffset/Uint32Array.BYTES_PER_ELEMENT + 5];
+    const trianglePhysicsGeometry = moduleInstance.HEAPU32[resultOffset/Uint32Array.BYTES_PER_ELEMENT + 6];
+    const convexPhysicsGeometry = moduleInstance.HEAPU32[resultOffset/Uint32Array.BYTES_PER_ELEMENT + 7];
 
     const positions = moduleInstance.HEAPF32.subarray(outPositionsOffset/Float32Array.BYTES_PER_ELEMENT, outPositionsOffset/Float32Array.BYTES_PER_ELEMENT + outNumPositions);
     const uvs = moduleInstance.HEAPF32.subarray(outUvsOffset/Float32Array.BYTES_PER_ELEMENT, outUvsOffset/Float32Array.BYTES_PER_ELEMENT + outNumUvs);
     const indices = moduleInstance.HEAPU32.subarray(outIndicesOffset/Uint32Array.BYTES_PER_ELEMENT, outIndicesOffset/Uint32Array.BYTES_PER_ELEMENT + outNumIndices);
 
+    w.free(inPs.byteOffset);
+    w.free(inHoles.byteOffset);
+    w.free(inHoleCounts.byteOffset);
+    w.free(inPoints.byteOffset);
+    w.free(inZs.byteOffset);
+
     return {
+      resultOffset,
+
       positions,
       uvs,
       indices,
+      trianglePhysicsGeometry,
+      convexPhysicsGeometry,
 
-      /* outPositionsOffset,
-      outNumPositions,
-      outUvsOffset,
-      outNumUvs,
-      outIndicesOffset,
-      outNumIndices, */
+      destory() {
+        moduleInstance._deleteEarcutResult(tracker, resultOffset);
+      },
     };
   };
   w.update = () => {
@@ -2616,45 +2596,6 @@ const geometryWorker = (() => {
     const _getSlabTorchLightOffset = spec => spec.torchLightsStart/Uint8Array.BYTES_PER_ELEMENT;
     const _getSlabIndexOffset = spec => spec.indicesStart/Uint32Array.BYTES_PER_ELEMENT;
 
-    mesh.addSlab = (x, y, z, spec) => {
-      const index = planet.getSubparcelIndex(x, y, z);
-      let slab = slabs[index];
-      if (slab) {
-        slab.free();
-        slab.spec = spec;
-        slab.group.start = _getSlabIndexOffset(spec);
-        slab.group.count = spec.indicesCount/Uint32Array.BYTES_PER_ELEMENT;
-      } else {
-        const group = {
-          start: _getSlabIndexOffset(spec),
-          count: spec.indicesCount/Uint32Array.BYTES_PER_ELEMENT,
-          materialIndex: 0,
-          boundingSphere: new THREE.Sphere(
-            new THREE.Vector3(x*SUBPARCEL_SIZE + SUBPARCEL_SIZE/2, y*SUBPARCEL_SIZE + SUBPARCEL_SIZE/2, z*SUBPARCEL_SIZE + SUBPARCEL_SIZE/2),
-            slabRadius
-          ),
-        };
-        geometry.groups.push(group);
-        slab = slabs[index] = {
-          x,
-          y,
-          z,
-          index,
-          spec,
-          group,
-          free() {
-            allocators.positions.free(this.spec.positionsFreeEntry);
-            allocators.uvs.free(this.spec.uvsFreeEntry);
-            allocators.ids.free(this.spec.idsFreeEntry);
-            allocators.skyLights.free(this.spec.skyLightsFreeEntry);
-            allocators.torchLights.free(this.spec.torchLightsFreeEntry);
-            allocators.indices.free(this.spec.indicesFreeEntry);
-            this.spec = null;
-          },
-        };
-      }
-      return slab;
-    };
     mesh.updateGeometry = (/*slab,*/ spec) => {
       geometry.attributes.position.updateRange.offset = _getSlabPositionOffset(spec);
       geometry.attributes.position.needsUpdate = true;
@@ -2735,7 +2676,6 @@ const geometryWorker = (() => {
     geometry.setAttribute('skyLight', thingBufferAttributes.skyLight);
     geometry.setAttribute('torchLight', thingBufferAttributes.torchLight);
     geometry.setIndex(thingBufferAttributes.index);
-    // geometry.allocators = allocators;
 
     const _getSlabPositionOffset = spec => spec.positionsStart/Float32Array.BYTES_PER_ELEMENT;
     const _getSlabUvOffset = spec => spec.uvsStart/Float32Array.BYTES_PER_ELEMENT;
@@ -2840,6 +2780,9 @@ const geometryWorker = (() => {
   currentThingMesh = _makeThingMesh();
   chunkMeshContainer.add(currentThingMesh);
 
+  meshDrawer = new MeshDrawer();
+  chunkMeshContainer.add(meshDrawer.mesh);
+
   planet.connect('lol', {
     online: false,
   }).then(() => {
@@ -2856,6 +2799,191 @@ const MeshDrawer = (() => {
 
   let numThings = 0;
 
+  const checkerboardCanvas = (() => {
+    const size = 512;
+    const canvas = document.createElement('canvas');
+    canvas.width = size;
+    canvas.height = size;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#FFF';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#CCC';
+    for (let x = 0; x < canvas.width; x += 64) {
+      for (let y = 0; y < canvas.height; y += 64) {
+        if ((x/64)%2 === ((y/64)%2)) {
+          ctx.fillRect(x, y, 64, 64);
+        }
+      }
+    }
+    return canvas;
+  })();
+  const _makeThingCanvas = () => {
+    const canvas = document.createElement('canvas');
+    canvas.width = checkerboardCanvas.width;
+    canvas.height = checkerboardCanvas.height;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(checkerboardCanvas, 0, 0);
+    canvas.ctx = ctx;
+    return canvas;
+  };
+
+  const _makeThingMesh = () => {
+    const geometry = new THREE.BufferGeometry();
+    // geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    // geometry.setAttribute('uv3', new THREE.BufferAttribute(uvs, 3));
+    // geometry.setIndex(new THREE.BufferAttribute(indices, 1));
+    // geometry = geometry.toNonIndexed();
+
+    const material = new THREE.ShaderMaterial({
+      uniforms: {
+        tex: {
+          type: 't',
+          value: new THREE.Texture(),
+          needsUpdate: false,
+        },
+        uSelectColor: {
+          type: 'c',
+          value: new THREE.Color(0xFFFFFF),
+          needsUpdate: true,
+        },
+      },
+      vertexShader: `\
+        precision highp float;
+        precision highp int;
+
+        attribute vec3 uv3;
+        varying vec3 vUv;
+        varying vec3 vBarycentric;
+
+        void main() {
+          vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+          gl_Position = projectionMatrix * mvPosition;
+
+          vUv = uv3;
+
+          float vid = float(gl_VertexID);
+          if (mod(vid, 3.) < 0.5) {
+            vBarycentric = vec3(1., 0., 0.);
+          } else if (mod(vid, 3.) < 1.5) {
+            vBarycentric = vec3(0., 1., 0.);
+          } else {
+            vBarycentric = vec3(0., 0., 1.);
+          }
+        }
+      `,
+      fragmentShader: `\
+        precision highp float;
+        precision highp int;
+
+        #define PI 3.1415926535897932384626433832795
+
+        uniform sampler2D tex;
+        uniform sampler2D indexTex;
+        uniform vec3 uSelectColor;
+
+        varying vec3 vUv;
+        varying vec3 vBarycentric;
+
+        float edgeFactor() {
+          vec3 d = fwidth(vBarycentric);
+          vec3 a3 = smoothstep(vec3(0.0), d, vBarycentric);
+          return min(min(a3.x, a3.y), a3.z);
+        }
+
+        void main() {
+          vec3 c = texture2D(tex, vUv.xy).rgb;
+          // c *= vec3(vUv.x, 0., vUv.y);
+          c.rgb *= uSelectColor;
+          if (edgeFactor() <= 0.99) {
+            c += 0.5;
+          }
+          gl_FragColor = vec4(c, 1.);
+        }
+      `,
+      // side: THREE.DoubleSide,
+    })
+    const mesh = new THREE.Mesh(geometry, material);
+    mesh.visible = false;
+    mesh.frustumCulled = false;
+    mesh.setGeometryData = thingSource => {
+      const {center, planeNormal, geometryData} = thingSource;
+      let geometry = new THREE.BufferGeometry();
+      geometry.setAttribute('position', new THREE.BufferAttribute(geometryData.positions, 3));
+      geometry.setAttribute('uv3', new THREE.BufferAttribute(geometryData.uvs, 3));
+      geometry.setIndex(new THREE.BufferAttribute(geometryData.indices, 1));
+      geometry = geometry.toNonIndexed();
+      mesh.geometry = geometry;
+
+      mesh.position.copy(center);
+      mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), planeNormal);
+      mesh.visible = true;
+    };
+    mesh.setTexture = thingSource => {
+      const {canvas} = thingSource;
+      material.uniforms.tex.value.image = canvas;
+      material.uniforms.tex.value.needsUpdate = true;
+      material.uniforms.tex.needsUpdate = true;
+    };
+    return mesh;
+  };
+
+  class ThingSource {
+    constructor(
+      ps = new Float32Array(),
+      holes = new Float32Array(),
+      holeCounts = new Uint32Array(),
+      points = new Float32Array(),
+      z = 0,
+      zs = new Float32Array(),
+      planeNormal = new THREE.Vector3(),
+      planeConstant = 0,
+      center = new THREE.Vector3(),
+      tang = new THREE.Vector3(1, 0, 0),
+      bitang = new THREE.Vector3(0, 1, 0)
+    ) {
+      this.ps = ps;
+      this.holes = holes;
+      this.holeCounts = holeCounts;
+      this.points = points;
+      this.z = z;
+      this.zs = zs;
+      this.planeNormal = planeNormal;
+      this.planeConstant = planeConstant;
+      this.center = center;
+      this.tang = tang;
+      this.bitang = bitang;
+
+      this.geometryData = null;
+      this.canvas = _makeThingCanvas();
+
+      this.objectId = Math.floor(Math.random() * 0xFFFFFF);
+      this.position = this.center.clone();
+      this.quaternion = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 0, 1), this.planeNormal);
+      this.scale = new THREE.Vector3(1, 1, 1);
+      this.matrix = new THREE.Matrix4().compose(this.position, this.quaternion, this.scale);
+      this.matrixWorld = this.matrix.clone().premultiply(currentChunkMesh.matrixWorld);
+    }
+    updateGeometryData() {
+      if (this.geometryData) {
+        this.geometryData.destroy();
+        this.geometryData = null;
+      }
+      const {positions, uvs, indices, trianglePhysicsGeometry, convexPhysicsGeometry, destroy} = geometryWorker.earcut(tracker, this.ps, this.holes, this.holeCounts, this.points, this.z, this.zs, this.objectId, this.position, this.quaternion);
+      this.geometryData = {
+        positions,
+        uvs,
+        indices,
+        trianglePhysicsGeometry,
+        convexPhysicsGeometry,
+        destroy,
+      };
+    }
+    static fromPoints(pointsData) {
+      const {points, planeNormal, planeConstant, center, tang, bitang} = geometryWorker.convexHull(pointsData, pe.camera.position);
+      const zs = new Float32Array(points.length/2);
+      return new ThingSource(points, undefined, undefined, undefined, undefined, zs, planeNormal, planeConstant, center, tang, bitang);
+    }
+  }
   return class MeshDrawer {
     constructor() {
       const points = new Float32Array(512*1024);
@@ -2875,6 +3003,9 @@ const MeshDrawer = (() => {
 
       this.lastPosition = new THREE.Vector3();
       this.numPositions = 0;
+
+      this.thingSources = [];
+      this.thingMeshes = [];
     }
     start(p) {
       this.lastPosition.copy(p);
@@ -2884,12 +3015,17 @@ const MeshDrawer = (() => {
       this.mesh.visible = false;
     }
     end(p) {
-      const points = geometryWorker.alloc(Float32Array, this.numPoints);
-      points.set(this.points.subarray(0, this.numPoints))
-      const convexHull = geometryWorker.convexHull(points, points.length, pe.camera.position);
-      console.log('got convex hull', convexHull);
+      const thingSource = ThingSource.fromPoints(this.points.subarray(0, this.numPoints));
+      thingSource.updateGeometryData();
+      this.thingSources.push(thingSource);
 
-      (() => {
+      const thingMesh = _makeThingMesh();
+      thingMesh.setGeometryData(thingSource);
+      thingMesh.setTexture(thingSource);
+      chunkMeshContainer.add(thingMesh);
+      this.thingMeshes.push(thingMesh);
+
+      /* (() => {
         let index = 0;
         const positions = new Float32Array(convexHull.points.length/2*3 * meshCubeGeometry.attributes.position.array.length);
         for (let i = 0; i < convexHull.points.length/2; i++) {
@@ -2925,9 +3061,9 @@ const MeshDrawer = (() => {
         mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), convexHull.planeNormal);
         mesh.frustumCulled = false;
         scene.add(mesh);
-      })();
+      })(); */
 
-      const fakeHoles = {
+      /* const fakeHoles = {
         byteOffset: 0,
         length: 0,
       };
@@ -2942,7 +3078,7 @@ const MeshDrawer = (() => {
       const zs = geometryWorker.alloc(Float32Array, convexHull.points/2);
       zs.fill(0);
 
-      this.drawPolygonize(convexHull.points, fakeHoles, fakeHoleCounts, fakePoints, 0.01, zs);
+      this.drawPolygonize(convexHull.points, fakeHoles, fakeHoleCounts, fakePoints, 0.01, zs); */
     }
     update(p) {
       p.toArray(this.points, this.numPoints);
@@ -2977,8 +3113,8 @@ const MeshDrawer = (() => {
       this.lastPosition.copy(p);
     }
     drawPolygonize(ps, holes, holeCounts, points, z, zs) {
-      const {positions, uvs, indices, /* outPositionsOffset, outIndicesOffset, outNumPositions, outNumIndices*/} = geometryWorker.earcut(ps.byteOffset, ps.length/2, holes.byteOffset, holeCounts.byteOffset, holeCounts.length, points.byteOffset, points.length, z, zs.byteOffset);
-  
+      const {positions, uvs, indices, trianglePhysicsGeometry, convexPhysicsGeometry} = geometryWorker.earcut(tracker, ps.byteOffset, ps.length/2, holes.byteOffset, holeCounts.byteOffset, holeCounts.length, points.byteOffset, points.length, z, zs.byteOffset);
+
       // console.log('got earcut', positions, uvs, indices);
 
       let geometry = new THREE.BufferGeometry();
@@ -2986,22 +3122,7 @@ const MeshDrawer = (() => {
       geometry.setAttribute('uv3', new THREE.BufferAttribute(uvs, 3));
       geometry.setIndex(new THREE.BufferAttribute(indices, 1));
       geometry = geometry.toNonIndexed();
-      const size = 512;
-      const canvas = document.createElement('canvas');
-      canvas.width = size;
-      canvas.height = size;
-      const ctx = canvas.getContext('2d');
-      ctx.fillStyle = '#FFF';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = '#CCC';
-      for (let x = 0; x < canvas.width; x += 64) {
-        for (let y = 0; y < canvas.height; y += 64) {
-          if ((x/64)%2 === ((y/64)%2)) {
-            ctx.fillRect(x, y, 64, 64);
-          }
-        }
-      }
-      const texture = new THREE.Texture(canvas);
+      const texture = new THREE.Texture(checkerboardCanvas);
       texture.needsUpdate = true;
       const material = new THREE.ShaderMaterial({
         uniforms: {
@@ -3080,26 +3201,23 @@ const MeshDrawer = (() => {
         outUvs2[j+1] = uvs[i+1];
       }
 
-      const name = 'thing' + (++numThings);
+      /* const name = 'thing' + (++numThings);
       // console.time('lol');
       const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
       // console.timeEnd('lol');
       const srcTexture = imageData.data;
       const dstTexture = geometryWorker.alloc(Uint8Array, srcTexture.length);
       dstTexture.set(srcTexture);
-      geometryWorker.requestAddThingGeometry(tracker, geometrySet, name, positions.byteOffset, outUvs2.byteOffset, indices.byteOffset, positions.length, outUvs2.length, indices.length, dstTexture.byteOffset)
+      geometryWorker.requestAddThingGeometry(tracker, geometrySet, name, positions.byteOffset, outUvs2.byteOffset, indices.byteOffset, positions.length, outUvs2.length, indices.length, dstTexture.byteOffset, trianglePhysicsGeometry)
         .then(() => geometryWorker.requestAddThing(tracker, geometrySet, name, new THREE.Vector3(3, -7, 3), new THREE.Quaternion(), new THREE.Vector3(1, 1, 1)))
         .then(() => {
           console.log('thing added');
-        }, console.warn);
+        }, console.warn); */
 
       return result;
     }
   };
 })();
-const meshDrawer = new MeshDrawer();
-scene.add(meshDrawer.mesh);
-
 (() => {
   const effectController = {
     turbidity: 2,
@@ -3422,152 +3540,21 @@ const _makeChunkMesh = async (seedString, parcelSize, subparcelSize) => {
   mesh.vegetationMeshes = {};
   mesh.objects = [];
 
-  const slabs = {};
-  /* let freeList = [{
-    start: 0,
-    count: numSlices,
-  }]; */
-  const _makeGroup = materialIndex => ({
-    start: 0,
-    count: 0,
-    materialIndex,
-  });
-  /* class Slab {
-    constructor(start) {
-      this.x = 0;
-      this.y = 0;
-      this.z = 0;
-      this.index = 0;
-      this.start = start;
-      this.position = new Float32Array(geometry.attributes.position.array.buffer, geometry.attributes.position.array.byteOffset + start*numLocalPositions*Float32Array.BYTES_PER_ELEMENT, numLocalPositions);
-      this.normal = new Float32Array(geometry.attributes.normal.array.buffer, geometry.attributes.normal.array.byteOffset + start*numLocalNormals*Float32Array.BYTES_PER_ELEMENT, numLocalNormals);
-      this.uv = new Float32Array(geometry.attributes.uv.array.buffer, geometry.attributes.uv.array.byteOffset + start*numLocalUvs*Float32Array.BYTES_PER_ELEMENT, numLocalUvs);
-      this.barycentric = new Float32Array(geometry.attributes.barycentric.array.buffer, geometry.attributes.barycentric.array.byteOffset + start*numLocalBarycentrics*Float32Array.BYTES_PER_ELEMENT, numLocalBarycentrics);
-      this.ao = new Uint8Array(geometry.attributes.ao.array.buffer, geometry.attributes.ao.array.byteOffset + start*numLocalAos*Uint8Array.BYTES_PER_ELEMENT, numLocalAos);
-      this.id = new Float32Array(geometry.attributes.id.array.buffer, geometry.attributes.id.array.byteOffset + start*numLocalIds*Float32Array.BYTES_PER_ELEMENT, numLocalIds);
-      this.skyLight = new Uint8Array(geometry.attributes.skyLight.array.buffer, geometry.attributes.skyLight.array.byteOffset + start*numLocalSkylights*Uint8Array.BYTES_PER_ELEMENT, numLocalSkylights);
-      this.torchLight = new Uint8Array(geometry.attributes.torchLight.array.buffer, geometry.attributes.torchLight.array.byteOffset + start*numLocalTorchlights*Uint8Array.BYTES_PER_ELEMENT, numLocalTorchlights);
-      this.peeks = new Uint8Array(peeks.buffer, peeks.byteOffset + start*numLocalPeeks*Uint8Array.BYTES_PER_ELEMENT, numLocalPeeks);
-      this.groupSet = {
-        groups: [_makeGroup(0), _makeGroup(1)],
-        boundingSphere: new THREE.Sphere(new THREE.Vector3(0, 0, 0), slabRadius),
-        slab: this,
-      };
-      this.physxGeometry = 0;
-      this.physxGroupSet = 0;
-    }
-    setPosition(x, y, z, index) {
-      this.x = x;
-      this.y = y;
-      this.z = z;
-      this.index = index;
-      this.groupSet.boundingSphere.center.set(x*SUBPARCEL_SIZE + SUBPARCEL_SIZE/2, y*SUBPARCEL_SIZE + SUBPARCEL_SIZE/2, z*SUBPARCEL_SIZE + SUBPARCEL_SIZE/2);
-    }
-  } */
-  /* const _findFreeSlab = () => {
-    if (freeList.length > 0) {
-      const entry = freeList[0];
-      if (entry.count > 1) {
-        freeList.splice(0, 1, {
-          start: entry.start + 1,
-          count: entry.count - 1,
-        });
-      } else {
-        freeList.shift();
-      }
-      return new Slab(entry.start);
-    } else {
-      throw new Error('could not allocate slab');
-    }
-  };
-  const _updateFreeList = () => {
-    freeList.sort((a, b) => a.start - b.start);
-    let merged = false;
-    for (let i = 0; i < freeList.length-1; i++) {
-      const entry = freeList[i];
-      if (entry) {
-        for (let j = i+1; j < freeList.length; j++) {
-          const nextEntry = freeList[j];
-          if (nextEntry) {
-            if (entry.start + entry.count === nextEntry.start) {
-              entry.count += nextEntry.count;
-              freeList[j] = null;
-              merged = true;
-            }
-          }
-        }
-      }
-    }
-    if (merged) {
-      freeList = freeList.filter(entry => !!entry);
-    }
-  }; */
   const _getSlabPositionOffset = spec => spec.positionsStart/Float32Array.BYTES_PER_ELEMENT;
   const _getSlabNormalOffset = spec => spec.normalsStart/Float32Array.BYTES_PER_ELEMENT;
   const _getSlabUvOffset = spec => spec.uvsStart/Float32Array.BYTES_PER_ELEMENT;
-  // const _getSlabBarycentricOffset = spec => spec.barycentricsStart/Float32Array.BYTES_PER_ELEMENT;
   const _getSlabAoOffset = spec => spec.aosStart/Uint8Array.BYTES_PER_ELEMENT;
   const _getSlabIdOffset = spec => spec.idsStart/Float32Array.BYTES_PER_ELEMENT;
   const _getSlabSkyLightOffset = spec => spec.skyLightsStart/Uint8Array.BYTES_PER_ELEMENT;
   const _getSlabTorchLightOffset = spec => spec.torchLightsStart/Uint8Array.BYTES_PER_ELEMENT;
 
-  mesh.addSlab = (x, y, z, spec) => {
-    const index = planet.getSubparcelIndex(x, y, z);
-    let slab = slabs[index];
-    if (slab) {
-      slab.free();
-      slab.spec = spec;
-      // slab.group.start = _getSlabIndexOffset(spec);
-      // slab.group.count = spec.indicesCount/Uint32Array.BYTES_PER_ELEMENT;
-    } else {
-      slab = slabs[index] = {
-        x,
-        y,
-        z,
-        index,
-        spec,
-        groupSet: {
-          groups: [_makeGroup(0), _makeGroup(1)],
-          boundingSphere: new THREE.Sphere(new THREE.Vector3(x*SUBPARCEL_SIZE + SUBPARCEL_SIZE/2, y*SUBPARCEL_SIZE + SUBPARCEL_SIZE/2, z*SUBPARCEL_SIZE + SUBPARCEL_SIZE/2), slabRadius),
-          slab: this,
-        },
-        physxGeometry: 0,
-        physxGroupSet: 0,
-        free() {
-          allocators.positions.free(this.spec.positionsFreeEntry);
-          allocators.normals.free(this.spec.normalsFreeEntry);
-          allocators.uvs.free(this.spec.uvsFreeEntry);
-          // allocators.barycentrics.free(this.spec.barycentricsFreeEntry);
-          allocators.aos.free(this.spec.aosFreeEntry);
-          allocators.ids.free(this.spec.idsFreeEntry);
-          allocators.skyLights.free(this.spec.skyLightsFreeEntry);
-          allocators.torchLights.free(this.spec.torchLightsFreeEntry);
-          allocators.peeks.free(this.spec.peeksFreeEntry);
-          this.spec = null;
-        },
-      };
-    }
-    return slab;
-
-    /* const index = planet.getSubparcelIndex(x, y, z);
-    let slab = slabs[index];
-    if (!slab) {
-      slab = _findFreeSlab();
-      slab.setPosition(x, y, z, index);
-      slabs[index] = slab;
-      mesh.groupSets.push(slab.groupSet);
-    }
-    return slab; */
-  };
-  mesh.updateGeometry = (/*slab,*/ spec) => {
+  mesh.updateGeometry = spec => {
     geometry.attributes.position.updateRange.offset = _getSlabPositionOffset(spec);
     geometry.attributes.position.needsUpdate = true;
     geometry.attributes.normal.updateRange.offset = _getSlabNormalOffset(spec);
     geometry.attributes.normal.needsUpdate = true;
     geometry.attributes.uv.updateRange.offset =_getSlabUvOffset(spec);
     geometry.attributes.uv.needsUpdate = true;
-    /* geometry.attributes.barycentric.updateRange.offset =_getSlabBarycentricOffset(spec);
-    geometry.attributes.barycentric.needsUpdate = true; */
     geometry.attributes.ao.needsUpdate = true;
     geometry.attributes.ao.updateRange.offset =_getSlabAoOffset(spec);
     geometry.attributes.id.updateRange.offset = _getSlabIdOffset(spec); // XXX can be removed and moved to uniforms for vegetation via vertexId
@@ -3580,31 +3567,13 @@ const _makeChunkMesh = async (seedString, parcelSize, subparcelSize) => {
     geometry.attributes.position.updateRange.count = spec.positionsCount/Float32Array.BYTES_PER_ELEMENT;
     geometry.attributes.normal.updateRange.count = spec.normalsCount/Float32Array.BYTES_PER_ELEMENT;
     geometry.attributes.uv.updateRange.count = spec.uvsCount/Float32Array.BYTES_PER_ELEMENT;
-    // geometry.attributes.barycentric.updateRange.count = spec.barycentricsCount/Float32Array.BYTES_PER_ELEMENT;
     geometry.attributes.ao.updateRange.count = spec.aosCount/Uint8Array.BYTES_PER_ELEMENT;
     geometry.attributes.id.updateRange.count = spec.idsCount/Float32Array.BYTES_PER_ELEMENT;
     geometry.attributes.skyLight.updateRange.count = spec.skyLightsCount/Uint8Array.BYTES_PER_ELEMENT;
     geometry.attributes.torchLight.updateRange.count = spec.torchLightsCount/Uint8Array.BYTES_PER_ELEMENT;
     renderer.geometries.update(geometry);
+  };
 
-    /* slab.groupSet.groups[0].start = _getSlabPositionOffset(spec)/3;
-    slab.groupSet.groups[0].count = spec.numOpaquePositions/3;
-    slab.groupSet.groups[1].start = slab.groupSet.groups[0].start + slab.groupSet.groups[0].count;
-    slab.groupSet.groups[1].count = spec.numTransparentPositions/3; */
-  };
-  mesh.freeSlabIndex = index => {
-    const slab = slabs[index];
-    if (slab) {
-      slab.free();
-      mesh.groupSets.splice(mesh.groupSets.indexOf(slab.groupSet), 1);
-      slabs[index] = null;
-      /* freeList.push({
-        start: slab.start,
-        count: 1,
-      });
-      _updateFreeList(freeList); */
-    }
-  };
   const currentPosition = new THREE.Vector3(NaN, NaN, NaN);
   mesh.currentPosition = currentPosition;
   /* window.getCurrentSubparcel = () => {
@@ -3615,409 +3584,10 @@ const _makeChunkMesh = async (seedString, parcelSize, subparcelSize) => {
     );
     return window.getSubparcel(localVector.x, localVector.y, localVector.z);
   }; */
-  const marchesTasks = [];
-  const vegetationsTasks = [];
-  const animalsTasks = [];
-  let packagesRunning = false;
-  mesh.updateSlab = (x, y, z) => {
-    const j = numUpdatedCoords++;
-    let coord = updatedCoords[j];
-    if (!coord) {
-      coord = new THREE.Vector3();
-      coord.index = 0;
-      updatedCoords[j] = coord;
-    }
-    coord.x = x;
-    coord.y = y;
-    coord.z = z;
-    coord.index = planet.getSubparcelIndex(x, y, z);
-  };
-  let neededCoords = [];
-  let lastNeededCoords = [];
-  let neededCoordIndices = {};
-  let lastNeededCoordIndices = {};
-  const addedCoords = [];
-  const removedCoords = [];
-  const updatedCoords = [];
-  let numUpdatedCoords = 0;
-  let coordUpdated = false;
+  // const animalsTasks = [];
   const _updateCurrentPosition = position => {
     currentPosition.copy(position)
       .applyMatrix4(localMatrix2.getInverse(mesh.matrixWorld));
-    /* const ncx = Math.floor(localVector3.x/subparcelSize);
-    const ncy = Math.floor(localVector3.y/subparcelSize);
-    const ncz = Math.floor(localVector3.z/subparcelSize);
-
-    if (currentCoord.x !== ncx || currentCoord.y !== ncy || currentCoord.z !== ncz) {
-      currentCoord.set(ncx, ncy, ncz);
-      coordUpdated = true;
-    } */
-  };
-  const _updateNeededCoords = () => {
-    return;
-    if (coordUpdated) {
-      lastNeededCoords = neededCoords;
-      lastNeededCoordIndices = neededCoordIndices;
-      neededCoords = [];
-      neededCoordIndices = {};
-
-      let i = 0;
-      for (let dx = -chunkDistance; dx <= chunkDistance; dx++) {
-        const ax = dx + currentCoord.x;
-        for (let dy = -chunkDistance; dy <= chunkDistance; dy++) {
-          const ay = dy + currentCoord.y;
-          for (let dz = -chunkDistance; dz <= chunkDistance; dz++) {
-            const az = dz + currentCoord.z;
-
-            const j = i++;
-            let neededCoord = neededCoords[j];
-            if (!neededCoord) {
-              neededCoord = new THREE.Vector3();
-              neededCoord.index = 0;
-              neededCoords[j] = neededCoord;
-            }
-            neededCoord.x = ax;
-            neededCoord.y = ay;
-            neededCoord.z = az;
-            const index = planet.getSubparcelIndex(ax, ay, az);
-            neededCoord.index = index;
-            neededCoordIndices[index] = true;
-
-            if (!lastNeededCoordIndices[index]) {
-              addedCoords.push(neededCoord);
-            }
-          }
-        }
-      }
-      for (const lastNeededCoord of lastNeededCoords) {
-        if (!neededCoordIndices[lastNeededCoord.index]) {
-          removedCoords.push(lastNeededCoord);
-        }
-      }
-    }
-  };
-  const _updateLastNeededCoords = () => {
-    if (coordUpdated) {
-      addedCoords.length = 0;
-      removedCoords.length = 0;
-      coordUpdated = false;
-    }
-    numUpdatedCoords = 0;
-  };
-  const _updateChunksRemove = () => {
-    for (const removedCoord of removedCoords) {
-      const {index} = removedCoord;
-      const slab = slabs[index];
-      if (slab) {
-        mesh.freeSlabIndex(index);
-
-        if (slab.physxGeometry) {
-          geometryWorker.unregisterGeometry(slab.physxGeometry);
-          slab.physxGeometry = 0;
-        }
-        if (slab.physxGroupSet) {
-          geometryWorker.unregisterGroupSet(culler, slab.physxGroupSet);
-          slab.physxGroupSet = 0;
-        }
-      }
-
-      const subparcelTasks = marchesTasks[index];
-      if (subparcelTasks) {
-        for (const task of subparcelTasks) {
-          task.cancel();
-        }
-        subparcelTasks.length = 0;
-      }
-    }
-  };
-  const _ensureCoord = coord => {
-    const {x: ax, y: ay, z: az, index} = coord;
-
-    for (let dx = 0; dx <= 1; dx++) {
-      const adx = ax + dx;
-      for (let dy = 0; dy <= 1; dy++) {
-        const ady = ay + dy;
-        for (let dz = 0; dz <= 1; dz++) {
-          const adz = az + dz;
-          if (!planet.peekSubparcel(adx, ady, adz)) {
-            planet.allocSubparcel(adx, ady, adz, seedNum, meshId, baseHeight);
-          }
-        }
-      }
-    }
-  };
-  const _loadCoord = coord => {
-    debugger;
-    const {x: ax, y: ay, z: az, index} = coord;
-    /* if (
-      !slabs[index] ||
-      subparcelsNeedUpdate.some(([x, y, z]) => x === ax && y === ay && z === az)
-    ) { */
-    let live = true;
-    (async () => {
-      const subparcel = planet.peekSubparcelByIndex(index);
-      await subparcel.load;
-      if (!live) return;
-
-      const spec = await geometryWorker.requestMarchingCubes(
-        seedNum,
-        meshId,
-        ax, ay, az,
-        subparcel.potentials,
-        subparcel.biomes,
-        subparcel.heightfield,
-        subparcel.lightfield,
-        geometry.allocators
-      );
-      if (!live) return;
-
-      const slab = mesh.addSlab(ax, ay, az, spec);
-      mesh.updateGeometry(slab, spec);
-
-      if (slab.physxGroupSet) {
-        geometryWorker.unregisterGroupSet(culler, slab.physxGroupSet);
-        slab.physxGroupSet = 0;
-      }
-      const peeks = new Uint8Array(currentChunkMesh.geometry.peeks.buffer, currentChunkMesh.geometry.peeks.byteOffset + slab.spec.peeksStart, slab.spec.peeksCount);
-      slab.physxGroupSet = geometryWorker.registerGroupSet(culler, slab.x, slab.y, slab.z, slabRadius, peeks, slab.groupSet.groups);
-
-      if (spec.numOpaquePositions > 0) {
-        const opaquePositions = new Float32Array(currentChunkMesh.geometry.attributes.position.array.buffer, currentChunkMesh.geometry.attributes.position.array.byteOffset + slab.spec.positionsStart, spec.numOpaquePositions);
-        const physicsGeometryBuffer = await geometryWorker.requestBakeGeometry(opaquePositions, null);
-        if (!live) {
-          geometryWorker.releaseBakedGeometry(physicsGeometryBuffer);
-          return;
-        }
-
-        if (slab.physxGeometry) {
-          geometryWorker.unregisterGeometry(slab.physxGeometry);
-          slab.physxGeometry = 0;
-        }
-        slab.physxGeometry = geometryWorker.registerBakedGeometry(currentChunkMesh.meshId, physicsGeometryBuffer, spec.x, spec.y, spec.z);
-      }
-    })()
-      .finally(() => {
-        if (live) {
-          subparcelTasks.splice(subparcelTasks.indexOf(task), 1);
-        }
-      });
-    const task = {
-      cancel() {
-        live = false;
-      },
-    };
-    let subparcelTasks = marchesTasks[index];
-    if (!subparcelTasks) {
-      subparcelTasks = [];
-      marchesTasks[index] = subparcelTasks;
-    }
-    subparcelTasks.push(task);
-    // }
-  };
-  const _updateChunksAdd = () => {
-    for (const addedCoord of addedCoords) {
-      _ensureCoord(addedCoord);
-    }
-    for (const addedCoord of addedCoords) {
-      _loadCoord(addedCoord);
-    }
-    for (let i = 0; i < numUpdatedCoords; i++) {
-      _loadCoord(updatedCoords[i]);
-    }
-  };
-  const _updateChunks = () => {
-    return;
-    _updateChunksRemove();
-    _updateChunksAdd();
-  };
-  const _removeVegetationPhysics = index => {
-    const subparcelVegetationMeshesSpec = mesh.vegetationMeshes[index];
-    if (subparcelVegetationMeshesSpec) {
-      for (const mesh of subparcelVegetationMeshesSpec.meshes) {
-        if (mesh.physxGeometry) {
-          geometryWorker.unregisterGeometry(mesh.physxGeometry);
-          mesh.physxGeometry = 0;
-        }
-      }
-    }
-  };
-  const _killVegetationsTasks = index => {
-    const subparcelTasks = vegetationsTasks[index];
-    if (subparcelTasks) {
-      for (const task of subparcelTasks) {
-        task.cancel();
-      }
-      subparcelTasks.length = 0;
-    }
-  };
-  const _updateVegetationsRemove = () => {
-    for (const removedCoord of removedCoords) {
-      const {index} = removedCoord;
-      currentVegetationMesh.freeSlabIndex(index);
-
-      _removeVegetationPhysics(index);
-      _killVegetationsTasks(index);
-    }
-  };
-  const _refreshVegetationMesh = (x, y, z, index, refresh) => {
-    debugger;
-    let subparcelTasks = vegetationsTasks[index];
-    if (!subparcelTasks) {
-      subparcelTasks = [];
-      vegetationsTasks[index] = subparcelTasks;
-    }
-
-    if (refresh) {
-      _killVegetationsTasks(index);
-    }
-
-    let live = true;
-    (async () => {
-      let localSubparcels = [];
-      for (let dz = -1; dz <= 1; dz++) {
-        const az = z + dz;
-        for (let dy = -1; dy <= 1; dy++) {
-          const ay = y + dy;
-          for (let dx = -1; dx <= 1; dx++) {
-            const ax = x + dx;
-            const subparcel = planet.peekSubparcel(ax, ay, az);
-            localSubparcels.push(subparcel);
-          }
-        }
-      }
-      localSubparcels = await Promise.all(localSubparcels.map(subparcel =>
-        subparcel && subparcel.load
-          .then(() => subparcel.offset)
-      ));
-      if (!live) return;
-      localSubparcels = localSubparcels.filter(subparcel => !!subparcel);
-
-      const subparcel = planet.peekSubparcelByIndex(index);
-      const spec = await geometryWorker.requestMarchObjects(x, y, z, geometrySet, subparcel, localSubparcels, currentVegetationMesh.geometry.allocators);
-      if (live) {
-        const vegetationMesh = currentVegetationMesh;
-        const slab = vegetationMesh.addSlab(x, y, z, spec);
-
-        /* slab.position.set(spec.positions);
-        slab.uv.set(spec.uvs);
-        slab.id.set(spec.ids);
-        slab.skyLight.set(spec.skyLights);
-        slab.torchLight.set(spec.torchLights);
-        const indexOffset = vegetationMesh.getSlabPositionOffset(slab)/3;
-        for (let i = 0; i < spec.indices.length; i++) {
-          spec.indices[i] += indexOffset;
-        }
-        slab.indices.set(spec.indices); */
-        vegetationMesh.updateGeometry(slab, spec);
-        slab.group.count = spec.indicesCount/Uint32Array.BYTES_PER_ELEMENT;
-
-        let subparcelVegetationMeshesSpec = mesh.vegetationMeshes[index];
-        if (!subparcelVegetationMeshesSpec) {
-          subparcelVegetationMeshesSpec = {
-            index,
-            meshes: [],
-          };
-          mesh.vegetationMeshes[index] = subparcelVegetationMeshesSpec;
-        }
-        if (refresh) {
-          _removeVegetationPhysics(index);
-        }
-        subparcelVegetationMeshesSpec.meshes.length = 0;
-
-        for (const vegetation of subparcel.vegetations) {
-          const {name: vegetationName} = vegetation;
-          if (vegetationName !== 'spawner') {
-            const {id: vegetationId} = vegetation;
-            const vegetationPosition = new THREE.Vector3().fromArray(vegetation.position);
-            const vegetationQuaternion = new THREE.Quaternion().fromArray(vegetation.quaternion);
-
-            const physicsOffset = physicsShapes[vegetationName];
-            const physxGeometry = physicsOffset ? (() => {
-              localMatrix2
-                .compose(physicsOffset.position, physicsOffset.quaternion, localVector4.set(1, 1, 1))
-                .premultiply(localMatrix3.compose(vegetationPosition, vegetationQuaternion, localVector4.set(1, 1, 1)))
-                .decompose(localVector4, localQuaternion3, localVector5);
-              return geometryWorker.registerBoxGeometry(vegetationId, localVector4, localQuaternion3, physicsOffset.scale.x, physicsOffset.scale.y, physicsOffset.scale.z);
-            })() : (() => {
-              localVector4.copy(vegetationPosition)
-                .add(localVector5.set(0, (2+0.5)/2, 0));
-              localQuaternion3.copy(vegetationQuaternion)
-                .multiply(capsuleUpQuaternion);
-              return geometryWorker.registerCapsuleGeometry(vegetationId, localVector4, localQuaternion3, 0.5, 2);
-            })();
-            const hitTracker = _makeHitTracker(vegetationPosition, vegetationQuaternion, 100, (originalPosition, positionOffset) => {
-              currentVegetationMesh.material[0].uniforms.uSelectPosition.value.copy(positionOffset);
-              currentVegetationMesh.material[0].uniforms.uSelectPosition.needsUpdate = true;
-            }, color => {
-              const id = color ? vegetationId : -1;
-              currentVegetationMesh.material[0].uniforms.uSelectId.value = id;
-              currentVegetationMesh.material[0].uniforms.uSelectId.needsUpdate = true;
-            }, () => {
-              const subparcelPosition = new THREE.Vector3(
-                Math.floor(vegetationPosition.x/subparcelSize),
-                Math.floor(vegetationPosition.y/subparcelSize),
-                Math.floor(vegetationPosition.z/subparcelSize)
-              );
-              planet.editSubparcel(subparcelPosition.x, subparcelPosition.y, subparcelPosition.z, subparcel => {
-                subparcel.removeVegetation(vegetationId);
-              });
-              mesh.updateSlab(subparcelPosition.x, subparcelPosition.y, subparcelPosition.z);
-            });
-            subparcelVegetationMeshesSpec.meshes.push({
-              isVegetationMesh: true,
-              meshId: vegetationId,
-              type: vegetationName,
-              position: vegetationPosition,
-              quaternion: vegetationQuaternion,
-              physxGeometry,
-              hit: hitTracker.hit,
-              update: hitTracker.update,
-            });
-          }
-        }
-      }
-    })()
-      .finally(() => {
-        if (live) {
-          subparcelTasks.splice(subparcelTasks.indexOf(task), 1);
-        }
-      });
-    const task = {
-      cancel() {
-        live = false;
-      },
-    };
-    subparcelTasks.push(task);
-  };
-  const _updateVegetationsAdd = () => {
-    for (const addedCoord of addedCoords) {
-      const {x, y, z, index} = addedCoord;
-      _refreshVegetationMesh(x, y, z, index, false);
-    }
-  };
-  const _updateVegetationsUpdate = () => {
-    for (let i = 0; i < numUpdatedCoords; i++) {
-      const {x, y, z, index} = updatedCoords[i];
-      _refreshVegetationMesh(x, y, z, index, true);
-    }
-  };
-  const _updateVegetationsNeeded = () => {
-    for (const neededCoord of neededCoords) {
-      const {index} = neededCoord;
-      const subparcelVegetationMeshesSpec = mesh.vegetationMeshes[index];
-      if (subparcelVegetationMeshesSpec) {
-        for (const mesh of subparcelVegetationMeshesSpec.meshes) {
-          mesh.update();
-        }
-      }
-    }
-  };
-  const _updateVegetations = () => {
-    return;
-    _updateVegetationsRemove();
-    _updateVegetationsAdd();
-    _updateVegetationsUpdate();
-    _updateVegetationsNeeded();
   };
   /* const _updatePackages = () => {
     const packagesNeedUpdate = false;
@@ -4069,7 +3639,7 @@ const _makeChunkMesh = async (seedString, parcelSize, subparcelSize) => {
       }
     }
   }; */
-  const _killAnimalsTasks = index => {
+  /* const _killAnimalsTasks = index => {
     const subparcelTasks = animalsTasks[index];
     if (subparcelTasks) {
       for (const task of subparcelTasks) {
@@ -4146,18 +3716,12 @@ const _makeChunkMesh = async (seedString, parcelSize, subparcelSize) => {
     }
   };
   const _updateAnimals = () => {
-    return;
     _updateAnimalsRemove();
     _updateAnimalsAdd();
-  };
+  }; */
   mesh.update = position => {
     _updateCurrentPosition(position);
-    _updateNeededCoords();
-    _updateChunks();
-    _updateVegetations();
-    // _updatePackages();
-    _updateAnimals();
-    _updateLastNeededCoords();
+    // _updateAnimals();
   };
   return mesh;
 };
@@ -4167,8 +3731,7 @@ planet.addEventListener('load', async e => {
 
   const chunkMesh = await _makeChunkMesh(chunkSpec.seedString, chunkSpec.parcelSize, chunkSpec.subparcelSize);
   chunkMeshContainer.add(chunkMesh);
-  chunkMeshes.push(chunkMesh);
-  _setCurrentChunkMesh(chunkMesh);
+  currentChunkMesh = chunkMesh;
 
   chunkMesh.updateMatrixWorld();
 
@@ -4179,26 +3742,12 @@ planet.addEventListener('load', async e => {
 
   const height = await geometryWorker.requestGetHeight(chunkMesh.seedNum, ncx, ncy + SUBPARCEL_SIZE, ncz, baseHeight, PARCEL_SIZE);
   worldContainer.position.y = - height - _getAvatarHeight();
-
-  /* {
-    let geometry = new CapsuleGeometry(0.5, 1, 16)
-      .applyMatrix4(new THREE.Matrix4().makeRotationFromQuaternion(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), Math.PI/2)))
-      // .applyMatrix4(new THREE.Matrix4().makeTranslation(0, 0.5/2+0.5, 0))
-      // .toNonIndexed();
-    geometry = new THREE.BufferGeometry().fromGeometry(geometry);
-    const material = new THREE.MeshBasicMaterial({
-      color: 0x008000,
-    });
-    capsuleMesh = new THREE.Mesh(geometry, material);
-    scene.add(capsuleMesh);
-  } */
 });
 planet.addEventListener('unload', () => {
-  const oldChunkMesh = _getCurrentChunkMesh();
+  const oldChunkMesh = currentChunkMesh;
   if (oldChunkMesh) {
     chunkMeshContainer.remove(oldChunkMesh);
-    chunkMeshes.splice(chunkMeshes.indexOf(oldChunkMesh), 1);
-    _setCurrentChunkMesh(null);
+    currentChunkMesh = null;
   }
 });
 planet.addEventListener('subparcelupdate', e => {
@@ -4293,29 +3842,6 @@ const removeMesh = (() => {
 })();
 removeMesh.visible = false;
 scene.add(removeMesh);
-
-const _findMeshWithMeshId = meshId => {
-  if (meshId === currentChunkMesh.meshId) {
-    return currentChunkMesh;
-  } else {
-    for (const index in currentChunkMesh.vegetationMeshes) {
-      const subparcelVegetationMeshesSpec = currentChunkMesh.vegetationMeshes[index];
-      if (subparcelVegetationMeshesSpec) {
-        for (const vegetationMesh of subparcelVegetationMeshesSpec.meshes) {
-          if (vegetationMesh.meshId === meshId) {
-            return vegetationMesh;
-          }
-        }
-      }
-    }
-    for (const animal of animals) {
-      if (animal.meshId === meshId) {
-        return animal;
-      }
-    }
-    return null;
-  }
-};
 
 const jointGeometry = new THREE.BoxBufferGeometry(0.01, 0.01, 0.01);
 const jointPositions = jointGeometry.attributes.position.array.slice();
@@ -4431,15 +3957,6 @@ const _makeTargetMesh = p => {
   const mesh = new THREE.Mesh(geometry, material);
   mesh.frustumCulled = false;
   return mesh;
-};
-const _makeVolumeMesh = async p => {
-  const volumeMesh = await p.getVolumeMesh();
-  if (volumeMesh) {
-    volumeMesh.frustumCulled = false;
-    return volumeMesh;
-  } else {
-    return new THREE.Object3D();
-  }
 };
 
 const lineMeshes = [
@@ -4947,23 +4464,15 @@ const _collideChunk = matrix => {
   currentChunkMesh && currentChunkMesh.update(localVector3);
 };
 
-const PEEK_FACES = {
-  FRONT: 1,
-  BACK: 2,
-  LEFT: 3,
-  RIGHT: 4,
-  TOP: 5,
-  BOTTOM: 6,
-};
-const PEEK_DIRECTIONS = [
-  [new THREE.Vector3(0, 0, 1), PEEK_FACES.FRONT],
-  [new THREE.Vector3(0, 0, -1), PEEK_FACES.BACK],
-  [new THREE.Vector3(-1, 0, 0), PEEK_FACES.LEFT],
-  [new THREE.Vector3(1, 0, 0), PEEK_FACES.RIGHT],
-  [new THREE.Vector3(0, 1, 0), PEEK_FACES.TOP],
-  [new THREE.Vector3(0, -1, 0), PEEK_FACES.BOTTOM],
-];
-const PEEK_FACE_INDICES = Int32Array.from([255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,0,1,2,3,4,255,255,255,255,255,255,255,255,255,255,0,255,5,6,7,8,255,255,255,255,255,255,255,255,255,255,1,5,255,9,10,11,255,255,255,255,255,255,255,255,255,255,2,6,9,255,12,13,255,255,255,255,255,255,255,255,255,255,3,7,10,12,255,14,255,255,255,255,255,255,255,255,255,255,4,8,11,13,14,255]);
+const cubeMesh = (() => {
+  const geometry = new THREE.BoxBufferGeometry(0.02, 0.02, 0.02);
+  const material = new THREE.MeshBasicMaterial({
+    color: 0x00FF00,
+  });
+  return new THREE.Mesh(geometry, material);
+})();
+cubeMesh.frustumCulled = false;
+scene.add(cubeMesh);
 
 const velocity = new THREE.Vector3();
 const lastGrabs = [false, false];
@@ -5023,7 +4532,7 @@ function animate(timestamp, frame) {
   crosshairMesh && crosshairMesh.update();
   uiMesh && uiMesh.update();
 
-  pe.orbitControls.enabled = selectedTool === 'camera' && selectedWeapon !== 'pencil';
+  pe.orbitControls.enabled = selectedTool === 'camera' && !['pencil', 'paintbrush', 'physics'].includes(selectedWeapon);
 
   const session = renderer.xr.getSession();
   if (session) {
@@ -5038,11 +4547,11 @@ function animate(timestamp, frame) {
         const result = geometryWorker.raycast(tracker, localVector, localQuaternion);
         raycastChunkSpec = result;
         if (raycastChunkSpec) {
-          // raycastChunkSpec.mesh = _findMeshWithMeshId(raycastChunkSpec.meshId);
           raycastChunkSpec.point = new THREE.Vector3().fromArray(raycastChunkSpec.point);
           raycastChunkSpec.normal = new THREE.Vector3().fromArray(raycastChunkSpec.normal);
           raycastChunkSpec.objectPosition = new THREE.Vector3().fromArray(raycastChunkSpec.objectPosition);
           raycastChunkSpec.objectQuaternion = new THREE.Quaternion().fromArray(raycastChunkSpec.objectQuaternion);
+          cubeMesh.position.copy(raycastChunkSpec.point);
         }
       }
 
@@ -5071,10 +4580,19 @@ function animate(timestamp, frame) {
           case 'pickaxe': {
             return pickaxeMesh;
           }
-          case 'paintbrush': {
+          case 'light': {
             return paintBrushMesh;
           }
           case 'pencil': {
+            return pencilMesh;
+          }
+          case 'paintbrush': {
+            return paintBrushMesh;
+          }
+          case 'select': {
+            return pencilMesh;
+          }
+          case 'physics': {
             return pencilMesh;
           }
           default: {
@@ -5247,7 +4765,7 @@ function animate(timestamp, frame) {
               }
             }
           };
-          const _paint = () => {
+          const _light = () => {
             if (raycastChunkSpec) {
               localVector2.copy(raycastChunkSpec.point)
                 .applyMatrix4(localMatrix.getInverse(currentChunkMesh.matrixWorld));
@@ -5326,8 +4844,8 @@ function animate(timestamp, frame) {
               _hit();
               break;
             }
-            case 'paintbrush': {
-              _paint();
+            case 'light': {
+              _light();
             }
           }
         } else {
@@ -5349,17 +4867,7 @@ function animate(timestamp, frame) {
             return false;
           })();
           if (!hasBuildMesh) {
-            /* const subparcelPosition = new THREE.Vector3(
-              Math.floor(buildMesh.position.x/currentChunkMesh.subparcelSize),
-              Math.floor(buildMesh.position.y/currentChunkMesh.subparcelSize),
-              Math.floor(buildMesh.position.z/currentChunkMesh.subparcelSize)
-            ); */
-            
             geometryWorker.requestAddObject(tracker, geometrySet, buildMesh.vegetationType, buildMesh.position, buildMesh.quaternion);
-            /* planet.editSubparcel(subparcelPosition.x, subparcelPosition.y, subparcelPosition.z, subparcel => {
-              subparcel.addVegetation(buildMesh.vegetationType, buildMesh.position, buildMesh.quaternion);
-            });
-            currentChunkMesh.updateSlab(subparcelPosition.x, subparcelPosition.y, subparcelPosition.z); */
           }
         }
       }
@@ -5375,12 +4883,49 @@ function animate(timestamp, frame) {
                 localVector2.copy(raycaster.ray.origin)
                   .add(localVector3.copy(raycaster.ray.direction).multiplyScalar(0.5));
               }
+              localVector2.applyMatrix4(localMatrix2.getInverse(meshDrawer.mesh.parent.matrixWorld));
 
               if (!lastWeaponDown) {
                 meshDrawer.start(localVector2);
               }
               meshDrawer.update(localVector2);
-              // console.log('drawing pencil');
+              break;
+            }
+            case 'paintbrush': {
+              console.log('click paintbrush 1');
+
+              if (raycastChunkSpec && raycastChunkSpec.objectId !== 0) {
+                const index = meshDrawer.thingSources.findIndex(thingSource => thingSource.objectId === raycastChunkSpec.objectId);
+                if (index !== -1) {
+                  const thingSource = meshDrawer.thingSources[index];
+                  const thingMesh = meshDrawer.thingMeshes[index];
+
+                  const {point, faceIndex} = raycastChunkSpec;
+                  const {geometryData: {positions, uvs, indices}} = thingSource;
+                  const ai = indices[faceIndex*3];
+                  const bi = indices[faceIndex*3+1];
+                  const ci = indices[faceIndex*3+2];
+                  const tri = new THREE.Triangle(
+                    new THREE.Vector3().fromArray(positions, ai*3).applyMatrix4(thingSource.matrixWorld),
+                    new THREE.Vector3().fromArray(positions, bi*3).applyMatrix4(thingSource.matrixWorld),
+                    new THREE.Vector3().fromArray(positions, ci*3).applyMatrix4(thingSource.matrixWorld)
+                  );
+                  const uva = new THREE.Vector2().fromArray(uvs, ai*3);
+                  const uvb = new THREE.Vector2().fromArray(uvs, bi*3);
+                  const uvc = new THREE.Vector2().fromArray(uvs, ci*3);
+                  const uv = THREE.Triangle.getUV(point, tri.a, tri.b, tri.c, uva, uvb, uvc, new THREE.Vector2());
+                  // console.log('painting', currentChunkMesh, raycastChunkSpec, thingSource, tri, point.toArray(), uv.toArray());
+                  const f = 10;
+                  const canvas = thingMesh.material.uniforms.tex.value.image;
+                  canvas.ctx.fillStyle = '#000';
+                  canvas.ctx.fillRect(uv.x * canvas.width - f/2, (1-uv.y) * canvas.height - f/2, f, f);
+                  thingMesh.material.uniforms.tex.value.needsUpdate = true;
+                }
+              }
+              break;
+            }
+            case 'physics': {
+              console.log('click physics 1');
               break;
             }
           }
@@ -5397,10 +4942,38 @@ function animate(timestamp, frame) {
                 localVector2.copy(raycaster.ray.origin)
                   .add(localVector3.copy(raycaster.ray.direction).multiplyScalar(0.5));
               }
+              localVector2.applyMatrix4(localMatrix2.getInverse(meshDrawer.mesh.parent.matrixWorld));
 
               meshDrawer.end(localVector2);
               break;
             }
+            case 'paintbrush': {
+              console.log('click paintbrush 2');
+              break;
+            }
+            case 'physics': {
+              console.log('click physics 2');
+              break;
+            }
+          }
+        }
+      }
+      if (!buildMode) {
+        switch (selectedWeapon) {
+          case 'select': {
+            for (const thingMesh of meshDrawer.thingMeshes) {
+              thingMesh.material.uniforms.uSelectColor.value.setHex(0xFFFFFF);
+              thingMesh.material.uniforms.needsUpdate = true;
+            }
+            if (raycastChunkSpec && raycastChunkSpec.objectId !== 0) {
+              const index = meshDrawer.thingSources.findIndex(thingSource => thingSource.objectId === raycastChunkSpec.objectId);
+              if (index !== -1) {
+                const thingMesh = meshDrawer.thingMeshes[index];
+                thingMesh.material.uniforms.uSelectColor.value.setHex(0x29b6f6);
+                thingMesh.material.uniforms.uSelectColor.needsUpdate = true;
+              }
+            }
+            break;
           }
         }
       }
@@ -5445,7 +5018,7 @@ function animate(timestamp, frame) {
         teleportMeshes[1].visible = false;
         _teleportTo(teleportMeshes[1].position, teleportMeshes[1].quaternion);
         if (currentTeleportChunkMesh.isChunkMesh) {
-          _setCurrentChunkMesh(currentTeleportChunkMesh);
+          currentChunkMesh = currentTeleportChunkMesh;
         }
       } else {
         teleportMeshes[1].update(localVector, localQuaternion, currentTeleport, (position, quaternion) => {
@@ -5504,7 +5077,6 @@ function animate(timestamp, frame) {
         const grab = buttons[1].pressed;
         const lastGrab = lastGrabs[index];
         if (!lastGrab && grab) { // grip
-          // console.log('gripped', handedness);
           pe.grabdown(handedness);
         } else if (lastGrab && !grab) {
           pe.grabup(handedness);
@@ -5621,8 +5193,8 @@ function animate(timestamp, frame) {
 
   // packages
   const isVisible = shieldLevel === 2;
-  const isTarget = shieldLevel === 0 && selectedTool !== 'select';
-  const isVolume = shieldLevel === 1 || selectedTool === 'select';
+  const isTarget = shieldLevel === 0 /*&& selectedTool !== 'select'*/;
+  const isVolume = shieldLevel === 1 /*|| selectedTool === 'select'*/;
   for (const p of pe.children) {
     p.visible = isVisible;
     if (p.placeholderBox) {
@@ -5632,18 +5204,6 @@ function animate(timestamp, frame) {
       p.volumeMesh.visible = isVolume;
     }
   }
-  /* if (hoverTarget) {
-    wireframeMaterial.uniforms.uHoverId.value.fromArray(meshIdToArray(hoverTarget.meshId).map(n => n / 255));
-    wireframeMaterial.uniforms.uHoverColor.value.fromArray(new THREE.Color(0x5c6bc0).toArray());
-  } else {
-    wireframeMaterial.uniforms.uHoverId.value.set(0, 0, 0);
-  }
-  if (selectTarget) {
-    wireframeMaterial.uniforms.uSelectId.value.fromArray(meshIdToArray(selectTarget.meshId).map(n => n / 255));
-    wireframeMaterial.uniforms.uSelectColor.value.fromArray(new THREE.Color(0x66bb6a).toArray());
-  } else {
-    wireframeMaterial.uniforms.uSelectId.value.set(0, 0, 0);
-  } */
 
   if (geometryWorker) {
     pxMeshes = pxMeshes.filter(pxMesh => {
@@ -5680,14 +5240,11 @@ function animate(timestamp, frame) {
 
   geometryWorker && geometryWorker.update();
 
-  // localFrustum.setFromProjectionMatrix(
-    localMatrix.multiplyMatrices(pe.camera.projectionMatrix, localMatrix2.multiplyMatrices(pe.camera.matrixWorldInverse, worldContainer.matrixWorld))
-  // );
+  localMatrix.multiplyMatrices(pe.camera.projectionMatrix, localMatrix2.multiplyMatrices(pe.camera.matrixWorldInverse, worldContainer.matrixWorld))
   if (currentChunkMesh && currentVegetationMesh) {
     localMatrix3.copy(pe.camera.matrixWorld)
       .premultiply(localMatrix2.getInverse(worldContainer.matrixWorld))
       .decompose(localVector, localQuaternion, localVector2);
-    // currentChunkMesh.geometry.groups = geometryWorker.cull(culler, localVector, localMatrix, slabRadius);
 
     const [landGroups, vegetationGroups, thingGroups] = geometryWorker.tickCull(tracker, localVector, localMatrix);
     currentChunkMesh.geometry.groups = landGroups;
@@ -5695,75 +5252,10 @@ function animate(timestamp, frame) {
     currentThingMesh.geometry.groups = thingGroups;
     // window.landGroups = landGroups;
     // window.vegetationGroups = vegetationGroups;
-
-    /* const _cull = () => {
-      localMatrix3.copy(pe.camera.matrixWorld)
-        .premultiply(localMatrix2.getInverse(worldContainer.matrixWorld))
-        .decompose(localVector, localQuaternion, localVector2);
-      const frustumGroupSets = currentChunkMesh.groupSets
-        .filter(groupSet => localFrustum.intersectsSphere(groupSet.boundingSphere))
-        .sort((a, b) => a.boundingSphere.center.distanceTo(localVector) - b.boundingSphere.center.distanceTo(localVector));
-      const frustumGroupSetIndex = {};
-      for (const groupSet of frustumGroupSets) {
-        frustumGroupSetIndex[groupSet.slab.index] = groupSet;
-      }
-
-      const _cullLoop = () => {
-        const groupSets = [];
-        const queue = frustumGroupSets.filter(groupSet => groupSet.boundingSphere.center.distanceTo(localVector) < slabRadius*2);
-        let queueIndex = 0;
-        const seenQueue = {};
-        for (const groupSet of queue) {
-          groupSets.push(groupSet);
-          seenQueue[groupSet.slab.index] = true;
-        }
-
-        const _cullFaces = groupSet => {
-          for (const [enterNormal, enterFace] of PEEK_DIRECTIONS) {
-            const direction = localVector2.copy(groupSet.boundingSphere.center)
-              .add(localVector3.copy(enterNormal).multiplyScalar(SUBPARCEL_SIZE/2))
-              .sub(localVector);
-            if (direction.dot(enterNormal) <= 0) {
-              for (const [exitNormal, exitFace] of PEEK_DIRECTIONS) {
-                const direction = localVector2.copy(groupSet.boundingSphere.center)
-                  .add(localVector3.copy(exitNormal).multiplyScalar(SUBPARCEL_SIZE/2))
-                  .sub(localVector);
-                if (direction.dot(exitNormal) >= 0 && groupSet.slab.peeks[PEEK_FACE_INDICES[enterFace << 4 | exitFace]]) {
-                  const nextIndex = planet.getSubparcelIndex(groupSet.slab.x + exitNormal.x, groupSet.slab.y + exitNormal.y, groupSet.slab.z + exitNormal.z);
-                  const nextGroupSet = frustumGroupSetIndex[nextIndex];
-                  if (nextGroupSet && !seenQueue[nextGroupSet.slab.index]) {
-                    groupSets.push(nextGroupSet);
-                    queue.push(nextGroupSet);
-                    seenQueue[nextGroupSet.slab.index] = true;
-                  }
-                }
-              }
-            }
-          }
-        };
-        while (queueIndex < queue.length) {
-          _cullFaces(queue[queueIndex++]);
-        }
-        return groupSets;
-      };
-      currentChunkMesh.geometry.groups = _cullLoop()
-        .map(groupSet => groupSet.groups)
-        .flat()
-        .sort((a, b) => a.materialIndex - b.materialIndex);
-    };
-    _cull(); */
   }
-  /* if (currentVegetationMesh) {
-    currentVegetationMesh.geometry.originalGroups = currentVegetationMesh.geometry.groups.slice();
-    currentVegetationMesh.geometry.groups = currentVegetationMesh.geometry.groups.filter(group => localFrustum.intersectsSphere(group.boundingSphere));
-  } */
 
   renderer.render(scene, camera);
   // renderer.render(highlightScene, camera);
-
-  /* if (currentVegetationMesh) {
-    currentVegetationMesh.geometry.groups = currentVegetationMesh.geometry.originalGroups;
-  } */
 
   planet.flush();
 }
@@ -5899,11 +5391,11 @@ for (let i = 0; i < tools.length; i++) {
           decapitate = false;
           break;
         }
-        case 'select': {
+        /* case 'select': {
           _resetKeys();
           velocity.set(0, 0, 0);
           break;
-        }
+        } */
       }
       if (pe.rig) {
         if (decapitate) {
@@ -6119,7 +5611,7 @@ window.addEventListener('keyup', e => {
   }
 });
 window.addEventListener('mousedown', e => {
-  if (document.pointerLockElement || selectedWeapon === 'pencil') {
+  if (document.pointerLockElement || ['physics', 'pencil'].includes(selectedWeapon)) {
     if (e.button === 0) {
       pe.grabtriggerdown('right');
       pe.grabuse('right');
@@ -6130,34 +5622,16 @@ window.addEventListener('mousedown', e => {
   }
 });
 window.addEventListener('mouseup', e => {
-  if (document.pointerLockElement || selectedWeapon === 'pencil') {
+  if (document.pointerLockElement || ['physics', 'pencil'].includes(selectedWeapon)) {
     pe.grabtriggerup('right');
   }
   currentWeaponDown = false;
   currentTeleport = false;
 });
 
-/* document.getElementById('world-name').addEventListener('change', e => {
-  pe.name = e.target.value;
-}); */
 document.getElementById('reset-scene-button').addEventListener('click', e => {
   pe.reset();
 });
-/* document.getElementById('publish-scene-button').addEventListener('click', async e => {
-  const hash = await pe.uploadScene();
-  const res = await fetch(scenesEndpoint + '/' + hash, {
-    method: 'PUT',
-    body: JSON.stringify({
-      name: pe.name,
-      hash,
-    }),
-  });
-  if (res.ok) {
-    // nothing
-  } else {
-    console.warn('invalid status code: ' + res.status);
-  }
-}); */
 document.getElementById('export-scene-button').addEventListener('click', async e => {
   const uint8Array = await pe.exportScene();
   const b = new Blob([uint8Array], {
@@ -6240,17 +5714,6 @@ const _ensurePlaceholdMesh = p => {
     scene.add(p.placeholderBox);
   }
 };
-/* const _ensureVolumeMesh = async p => {
-  if (!p.volumeMesh) {
-    p.volumeMesh = await _makeVolumeMesh(p);
-    p.volumeMesh = getWireframeMesh(p.volumeMesh);
-    decorateRaycastMesh(p.volumeMesh, p.id);
-    p.volumeMesh.package = p;
-    p.volumeMesh.matrix.copy(p.matrix).decompose(p.volumeMesh.position, p.volumeMesh.quaternion, p.volumeMesh.scale);
-    p.volumeMesh.visible = false;
-    scene.add(p.volumeMesh);
-  }
-}; */
 const shieldSlider = document.getElementById('shield-slider');
 let shieldLevel = parseInt(shieldSlider.value, 10);
 shieldSlider.addEventListener('change', async e => {
@@ -6476,27 +5939,11 @@ const avatarSubpage = document.getElementById('avatar-subpage');
 const avatarSubpageContent = avatarSubpage.querySelector('.subtab-content');
 const tabs = Array.from(dropdown.querySelectorAll('.tab'));
 const tabContents = Array.from(dropdown.querySelectorAll('.tab-content'));
-/* const worldsSubtabs = Array.from(worldsSubpage.querySelectorAll('.subtab'));
-const worldsCloseButton = worldsSubpage.querySelector('.close-button');
-const worldsSubtabContents = Array.from(worldsSubpage.querySelectorAll('.subtab-content')); */
 const packagesCloseButton = packagesSubpage.querySelector('.close-button');
 const inventorySubtabs = Array.from(inventorySubpage.querySelectorAll('.subtab'));
 const inventoryCloseButton = inventorySubpage.querySelector('.close-button');
 const inventorySubtabContent = inventorySubpage.querySelector('.subtab-content');
 const avatarCloseButton = avatarSubpage.querySelector('.close-button');
-/* worldsButton.addEventListener('click', e => {
-  worldsButton.classList.toggle('open');
-  worldsSubpage.classList.toggle('open');
-
-  dropdownButton.classList.remove('open');
-  dropdown.classList.remove('open');
-  packagesButton.classList.remove('open');
-  packagesSubpage.classList.remove('open');
-  inventoryButton.classList.remove('open');
-  inventorySubpage.classList.remove('open');
-  avatarButton.classList.remove('open');
-  avatarSubpage.classList.remove('open');
-}); */
 packagesButton.addEventListener('click', e => {
   packagesButton.classList.add('open');
   packagesSubpage.classList.add('open');
@@ -6505,8 +5952,6 @@ packagesButton.addEventListener('click', e => {
   dropdown.classList.remove('open');
   inventoryButton.classList.remove('open');
   inventorySubpage.classList.remove('open');
-  /* worldsButton.classList.remove('open');
-  worldsSubpage.classList.remove('open'); */
   avatarButton.classList.remove('open');
   avatarSubpage.classList.remove('open');
 });
@@ -6518,8 +5963,6 @@ inventoryButton.addEventListener('click', e => {
   dropdown.classList.remove('open');
   packagesButton.classList.remove('open');
   packagesSubpage.classList.remove('open');
-  /* worldsButton.classList.remove('open');
-  worldsSubpage.classList.remove('open'); */
   avatarButton.classList.remove('open');
   avatarSubpage.classList.remove('open');
 });
@@ -6531,8 +5974,6 @@ avatarButton.addEventListener('click', e => {
   dropdown.classList.remove('open');
   packagesButton.classList.remove('open');
   packagesSubpage.classList.remove('open');
-  /* worldsButton.classList.remove('open');
-  worldsSubpage.classList.remove('open'); */
   inventoryButton.classList.remove('open');
   inventorySubpage.classList.remove('open');
 });
@@ -6545,7 +5986,6 @@ dropdownButton.addEventListener('click', e => {
   packagesSubpage.classList.remove('open');
   inventoryButton.classList.remove('open');
   inventorySubpage.classList.remove('open');
-  // worldsSubpage.classList.remove('open');
   avatarButton.classList.remove('open');
   avatarSubpage.classList.remove('open');
 });
@@ -6577,44 +6017,12 @@ for (let i = 0; i < tabs.length; i++) {
     _setSelectTarget(null);
   });
 }
-/* for (let i = 0; i < worldsSubtabs.length; i++) {
-  const subtab = worldsSubtabs[i];
-  const subtabContent = worldsSubtabContents[i];
-  subtab.addEventListener('click', e => {
-    for (let i = 0; i < worldsSubtabs.length; i++) {
-      const subtab = worldsSubtabs[i];
-      const subtabContent = worldsSubtabContents[i];
-      subtab.classList.remove('open');
-      subtabContent.classList.remove('open');
-    }
-
-    subtab.classList.add('open');
-    subtabContent.classList.add('open');
-  });
-}
-for (let i = 0; i < inventorySubtabs.length; i++) {
-  const subtab = inventorySubtabs[i];
-  const subtabContent = inventorySubtabContents[i];
-  subtab.addEventListener('click', e => {
-    for (let i = 0; i < inventorySubtabs.length; i++) {
-      const subtab = inventorySubtabs[i];
-      const subtabContent = inventorySubtabContents[i];
-      subtab.classList.remove('open');
-      subtabContent.classList.remove('open');
-    }
-
-    subtab.classList.add('open');
-    subtabContent.classList.add('open');
-  });
-} */
-[/* worldsCloseButton, */packagesCloseButton, inventoryCloseButton, avatarCloseButton].forEach(closeButton => {
+[packagesCloseButton, inventoryCloseButton, avatarCloseButton].forEach(closeButton => {
   closeButton.addEventListener('click', e => {
     dropdownButton.classList.remove('open');
     dropdown.classList.remove('open');
     packagesButton.classList.remove('open');
     packagesSubpage.classList.remove('open');
-    /* worldsButton.classList.remove('open');
-    worldsSubpage.classList.remove('open'); */
     inventoryButton.classList.remove('open');
     inventorySubpage.classList.remove('open');
     avatarButton.classList.remove('open');
@@ -6774,14 +6182,9 @@ const _makeWorldHtml = w => `
     </div>
   </div>
 `;
-// const headerLabel = document.getElementById('header-label');
 let currentWorldId = '';
 const _enterWorld = async worldId => {
   currentWorldId = worldId;
-
-  /* headerLabel.innerText = name || 'Sandbox';
-  runMode.setAttribute('href', 'run.html' + (worldId ? ('?w=' + worldId) : ''));
-  editMode.setAttribute('href', 'edit.html' + (worldId ? ('?w=' + worldId) : '')); */
 
   const worlds = Array.from(document.querySelectorAll('.world'));
   worlds.forEach(world => {
@@ -6852,41 +6255,6 @@ const _bindWorld = w => {
     }
   });
 };
-/* (async () => {
-  const res = await fetch(worldsEndpoint);
-  const children = await res.json();
-  const ws = await Promise.all(children.map(child =>
-    fetch(worldsEndpoint + '/' + child)
-      .then(res => res.json()),
-  ));
-  worlds.innerHTML = ws.map(w => _makeWorldHtml(w)).join('\n');
-  Array.from(worlds.querySelectorAll('.world')).forEach((w, i) => _bindWorld(w, ws[i]));
-})(); */
-/* let worldType = 'singleplayer';
-const singleplayerButton = document.getElementById('singleplayer-button');
-singleplayerButton.addEventListener('click', e => {
-  pe.reset();
-
-  singleplayerButton.classList.add('open');
-  multiplayerButton.classList.remove('open');
-  Array.from(worlds.querySelectorAll('.world')).forEach(w => {
-    w.classList.remove('open');
-  });
-  worldType = 'singleplayer';
-  worldTools.style.visibility = null;
-});
-const multiplayerButton = document.getElementById('multiplayer-button');
-multiplayerButton.addEventListener('click', async e => {
-  pe.reset();
-
-  singleplayerButton.classList.remove('open');
-  multiplayerButton.classList.add('open');
-  Array.from(worlds.querySelectorAll('.world')).forEach(w => {
-    w.classList.remove('open');
-  });
-  worldType = 'multiplayer';
-  worldTools.style.visibility = null;
-}); */
 
 const dropZones = Array.from(document.querySelectorAll('.drop-zone'));
 dropZones.forEach(dropZone => {
@@ -7121,12 +6489,6 @@ const _bindPackage = (pE, pJ) => {
   wearButton.addEventListener('click', () => {
     loginManager.setAvatar(dataHash);
   });
-  /* const inspectButton = pE.querySelector('.inspect-button');
-  inspectButton.addEventListener('click', e => {
-    e.preventDefault();
-    console.log('open', inspectButton.getAttribute('href'));
-    window.open(inspectButton.getAttribute('href'), '_blank');
-  }); */
 };
 const packages = document.getElementById('packages');
 (async () => {
@@ -7140,8 +6502,6 @@ let s;
   ));
   packages.innerHTML = ps.map(p => _makePackageHtml(p)).join('\n');
   Array.from(packages.querySelectorAll('.package')).forEach((pe, i) => _bindPackage(pe, ps[i]));
-
-  // wristMenu.packageSide.setPackages(ps);
 })();
 const tokens = document.getElementById('tokens');
 async function getTokenByIndex(index) {
@@ -7216,131 +6576,7 @@ pe.domElement.addEventListener('drop', async e => {
       </div>
     </div>
   `;
-};
-(async () => {
-  const totalObjects = await contract.methods.getNonce().call();
-  const ts = [];
-  for (let i = 1; i <= totalObjects; i++) {
-    const t = await getTokenByIndex(i);
-    ts.push(t);
-    const h = _getTokenHtml(t);
-    tokens.innerHTML += h;
-
-    Array.from(tokens.querySelectorAll('.token')).forEach((token, i) => {
-      const addAction = token.querySelector('.add-action');
-      addAction.addEventListener('click', async e => {
-        const t = ts[i];
-        const {dataHash} = t;
-        const p = await XRPackage.download(dataHash);
-        p.hash = dataHash;
-        pe.add(p);
-      });
-      const input = token.querySelector('input');
-      input.addEventListener('click', e => {
-        input.select();
-      });
-    });
-  }
-})(); */
-/* const scenes = document.getElementById('scenes');
-(async () => {
-  const res = await fetch(scenesEndpoint);
-  const children = await res.json();
-  const ss = await Promise.all(children.map(child =>
-    fetch(scenesEndpoint + '/' + child)
-      .then(res => res.json())
-  ));
-  scenes.innerHTML = ss.map(s => `
-    <div class=scene>${s.name}</div>
-  `).join('\n');
-  Array.from(scenes.querySelectorAll('.scene')).forEach((s, i) => {
-    s.addEventListener('click', async e => {
-      const s = ss[i];
-      const {hash} = s;
-      pe.downloadScene(hash);
-    });
-  });
-})();
-const worldTools = document.getElementById('world-tools');
-const publishWorldButton = document.getElementById('publish-world-button');
-publishWorldButton.addEventListener('click', async e => {
-  let hash;
-  if (worldType === 'singleplayer') {
-    hash = await pe.uploadScene();
-  } else if (worldType === 'multiplayer') {
-    const array = new Uint8Array(32);
-    crypto.getRandomValues(array);
-    hash = Array.prototype.map.call(array, x => ('00' + x.toString(16)).slice(-2)).join('');
-  }
-
-  const w = {
-    name: 'WebXR world',
-    description: 'This is a world description',
-    hash,
-    type: worldType,
-  };
-  const res = await fetch(worldsEndpoint + '/' + hash, {
-    method: 'PUT',
-    body: JSON.stringify(w),
-  });
-  if (res.ok) {
-    worlds.innerHTML += '\n' + _makeWorldHtml(w);
-    const ws = Array.from(worlds.querySelectorAll('.world'));
-    Array.from(worlds.querySelectorAll('.world')).forEach(w => _bindWorld(w));
-    const newW = ws[ws.length - 1];
-    newW.click();
-  } else {
-    console.warn('invalid status code: ' + res.status);
-  }
-}); */
-/* const sandboxButton = document.getElementById('sandbox-button');
-sandboxButton.addEventListener('click', e => {
-  _pushWorld(null);
-});
-function makeId(length) {
-  var result = '';
-  var characters = 'abcdefghijklmnopqrstuvwxyz0123456789';
-  var charactersLength = characters.length;
-  for (var i = 0; i < length; i++) {
-    result += characters.charAt(Math.floor(Math.random() * charactersLength));
-  }
-  return result;
-}
-const newWorldButton = document.getElementById('new-world-button');
-newWorldButton.addEventListener('click', async e => {
-  pe.reset();
-  const hash = await pe.uploadScene();
-
-  const screenshotBlob = await screenshotEngine();
-  const {hash: previewIconHash} = await fetch(`${apiHost}/`, {
-    method: 'PUT',
-    body: screenshotBlob,
-  })
-    .then(res => res.json());
-
-  const worldId = makeId(8);
-  const w = {
-    id: worldId,
-    name: worldId,
-    description: 'This is a world description',
-    hash,
-    previewIconHash,
-    objects: [],
-  };
-  const res = await fetch(worldsEndpoint + '/' + w.name, {
-    method: 'PUT',
-    body: JSON.stringify(w),
-  });
-  if (res.ok) {
-    worlds.innerHTML += '\n' + _makeWorldHtml(w);
-    const ws = Array.from(worlds.querySelectorAll('.world'));
-    Array.from(worlds.querySelectorAll('.world')).forEach(w => _bindWorld(w));
-    const newW = ws[ws.length - 1];
-    newW.click();
-  } else {
-    console.warn('invalid status code: ' + res.status);
-  }
-}); */
+}; */
 
 const objectsEl = document.getElementById('objects');
 const _getObjectDetailEls = () => {
@@ -7676,8 +6912,6 @@ const _renderObjects = () => {
         });
       };
       _renderChildren(objectsEl, pe.children, 0);
-      
-      // wristMenu.objectsSide.setObjects(pe.children);
     } else {
       objectsEl.innerHTML = `<h1 class=placeholder>No objects in scene</h1>`;
     }
