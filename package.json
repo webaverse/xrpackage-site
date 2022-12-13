@@ -20,7 +20,7 @@
   },
   "homepage": "https://github.com/webaverse/xrpackage-site",
   "dependencies": {
-    "express": "^4.17.1"
+    "express": "^4.17.3"
   },
   "browserslist": [
     "last 1 chrome version"
